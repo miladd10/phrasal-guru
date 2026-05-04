@@ -24,9 +24,11 @@ import {
   Plus, 
   Search, 
   ArrowLeft, 
+  ArrowRight,
   Loader2,
   Sparkles,
   LogOut,
+  ChevronRight,
   User as UserIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -118,7 +120,7 @@ export default function App() {
   };
 
   const toggleMastered = useCallback(async (verb: string) => {
-    const nextMastered = new Set(masteredVerbs);
+    const nextMastered = new Set<string>(masteredVerbs);
     if (nextMastered.has(verb)) nextMastered.delete(verb);
     else nextMastered.add(verb);
     
@@ -153,19 +155,20 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#FDFDFD] text-gray-900 font-sans selection:bg-indigo-100 selection:text-indigo-900">
       {/* Navigation Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4">
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-indigo-100 ring-4 ring-indigo-50">
-              <BookOpen size={24} />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-600 rounded-xl sm:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100 ring-4 ring-indigo-50">
+              <BookOpen size={20} className="sm:w-6 sm:h-6" />
             </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-black tracking-tight text-gray-900">Phrasal Guru</h1>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-indigo-500 font-black">Vocabulary System</p>
+            <div>
+              <h1 className="text-lg sm:text-xl font-black tracking-tight text-gray-900 leading-none">Phrasal Guru</h1>
+              <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] text-indigo-500 font-black">Vocabulary System</p>
             </div>
           </div>
 
-          <nav className="hidden sm:flex items-center gap-1 bg-gray-100 p-1.5 rounded-2xl shadow-inner">
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-1 bg-gray-100 p-1.5 rounded-2xl shadow-inner">
             <button
               onClick={() => setView('study')}
               className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
@@ -184,19 +187,20 @@ export default function App() {
             </button>
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {user ? (
               <button 
                 onClick={logout}
-                className="flex items-center gap-2 p-2 bg-gray-50 text-gray-500 hover:text-red-500 rounded-xl transition-all border border-gray-100"
+                className="flex items-center gap-2 p-2.5 bg-gray-50 text-gray-500 hover:text-red-500 rounded-xl transition-all border border-gray-100"
                 title="Logout"
               >
                 <LogOut size={18} />
+                <span className="hidden sm:inline text-xs font-bold">Logout</span>
               </button>
             ) : (
               <button 
                 onClick={loginWithGoogle}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:border-indigo-500 transition-all shadow-sm"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white border border-gray-200 rounded-xl text-[10px] sm:text-xs font-bold hover:border-indigo-500 transition-all shadow-sm"
               >
                 <UserIcon size={14} className="text-indigo-600" />
                 Login
@@ -205,7 +209,7 @@ export default function App() {
             
             <button
               onClick={() => setView('add')}
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-md group ${
+              className={`hidden sm:flex w-12 h-12 rounded-2xl items-center justify-center transition-all shadow-md group ${
                 view === 'add' ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-white text-gray-400 hover:text-indigo-600 border border-gray-100'
               }`}
             >
@@ -215,7 +219,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-12">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-12 pb-24 sm:pb-12">
         <AnimatePresence mode="wait">
           {view === 'study' && (
             <motion.div
@@ -225,38 +229,50 @@ export default function App() {
               exit={{ opacity: 0, y: -20 }}
               className="flex flex-col items-center"
             >
-              <div className="w-full max-w-lg mb-8 flex justify-between items-center px-4">
+              <div className="w-full max-w-lg mb-6 sm:mb-8 flex justify-center px-2 sm:px-4">
                  <button 
                   onClick={() => setShowOnlyUnmastered(!showOnlyUnmastered)}
-                  className={`text-[10px] uppercase tracking-wider font-black px-4 py-2 rounded-full border transition-all ${
-                    showOnlyUnmastered ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-400'
+                  className={`text-[9px] sm:text-[10px] uppercase tracking-wider font-black px-4 sm:px-5 py-2.5 sm:py-2 rounded-full border transition-all ${
+                    showOnlyUnmastered ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-white border-gray-200 text-gray-400'
                   }`}
                  >
-                   {showOnlyUnmastered ? 'Showing: New Only' : 'Showing: All Cards'}
+                   {showOnlyUnmastered ? 'Mode: Target New' : 'Mode: Master Review'}
                  </button>
-                 <div className="flex -space-x-2">
-                    {studyVerbs.slice(0, 3).map((v, i) => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-indigo-50 flex items-center justify-center text-[10px] font-bold text-indigo-400">
-                        {v.verb[0].toUpperCase()}
-                      </div>
-                    ))}
-                    {studyVerbs.length > 3 && (
-                      <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-400">
-                        +{studyVerbs.length - 3}
-                      </div>
-                    )}
-                 </div>
               </div>
 
               {studyVerbs.length > 0 ? (
-                <FlashCard 
-                  verb={studyVerbs[currentIndex] || studyVerbs[0]} 
-                  onNext={handleNext}
-                  index={currentIndex}
-                  total={studyVerbs.length}
-                  isMastered={masteredVerbs.has(studyVerbs[currentIndex]?.verb)}
-                  onToggleMastered={toggleMastered}
-                />
+                <div className="w-full max-w-2xl mx-auto space-y-8">
+                  <FlashCard 
+                    verb={studyVerbs[currentIndex] || studyVerbs[0]} 
+                    onNext={handleNext}
+                    index={currentIndex}
+                    total={studyVerbs.length}
+                    isMastered={masteredVerbs.has(studyVerbs[currentIndex]?.verb)}
+                    onToggleMastered={toggleMastered}
+                  />
+
+                  {/* Navigation Controls - Flow Layout */}
+                  <div className="flex items-center justify-center gap-4 px-4 pb-8">
+                    <button
+                      onClick={() => {
+                        if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
+                        else setCurrentIndex(studyVerbs.length - 1);
+                      }}
+                      className="w-16 h-16 sm:w-16 sm:h-16 bg-white border border-gray-100 text-gray-400 rounded-2xl shadow-sm hover:text-indigo-600 transition-all flex items-center justify-center active:scale-95 group"
+                      title="Previous Word"
+                    >
+                      <ArrowLeft size={28} className="group-hover:-translate-x-1 transition-transform" />
+                    </button>
+                    
+                    <button
+                      onClick={handleNext}
+                      className="w-16 h-16 sm:w-16 sm:h-16 bg-white border border-gray-100 text-gray-400 rounded-2xl shadow-sm hover:text-indigo-600 transition-all flex items-center justify-center active:scale-95 group"
+                      title="Next Word"
+                    >
+                      <ArrowRight size={28} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <div className="text-center py-32">
                    <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center text-green-500 mx-auto mb-6">
@@ -389,8 +405,46 @@ export default function App() {
         </AnimatePresence>
       </main>
 
+      {/* Mobile Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/90 backdrop-blur-lg border-t border-gray-100 p-2 pb-safe">
+        <div className="flex items-center justify-around max-w-lg mx-auto">
+          <button
+            onClick={() => setView('study')}
+            className={`flex flex-col items-center gap-1 p-2 transition-all ${
+              view === 'study' ? 'text-indigo-600' : 'text-gray-400'
+            }`}
+          >
+            <div className={`p-1 rounded-lg ${view === 'study' ? 'bg-indigo-50' : ''}`}>
+              <BookOpen size={22} />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-tighter">Study</span>
+          </button>
+          
+          <button
+            onClick={() => setView('add')}
+            className={`-translate-y-4 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all ${
+              view === 'add' ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-600 border border-indigo-100'
+            }`}
+          >
+            <Plus size={28} />
+          </button>
+
+          <button
+            onClick={() => setView('library')}
+            className={`flex flex-col items-center gap-1 p-2 transition-all ${
+              view === 'library' ? 'text-indigo-600' : 'text-gray-400'
+            }`}
+          >
+            <div className={`p-1 rounded-lg ${view === 'library' ? 'bg-indigo-50' : ''}`}>
+              <Library size={22} />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-tighter">Library</span>
+          </button>
+        </div>
+      </nav>
+
       {/* Footer Decoration */}
-      <footer className="max-w-5xl mx-auto px-6 py-12 text-center">
+      <footer className="max-w-5xl mx-auto px-6 py-12 text-center pb-32 md:pb-12">
         <p className="text-gray-300 text-[10px] uppercase tracking-[0.2em] font-bold">
           Knowledge is Power • Build your Vocabulary
         </p>

@@ -1424,6 +1424,1021 @@ export const PHRASAL_VERBS_DATA: PhrasalVerb[] = [
     example: "Teachers written him off.",
     phonetic: "/ˌraɪt ˈɒf/",
     translation: "اسقاط کردن / نادیده گرفتن"
+  },
+  {
+    verb: "blow up",
+    definition: "explode or cause to explode",
+    example: "The terrorists tried to blow up the bridge.",
+    phonetic: "/ˌbləʊ ˈʌp/",
+    translation: "منفجر شدن"
+  },
+  {
+    verb: "bring up",
+    definition: "mention a topic or raise a child",
+    example: "She brought up the subject of money.",
+    phonetic: "/ˌbrɪŋ ˈʌp/",
+    translation: "مطرح کردن / بزرگ کردن (کودک)"
+  },
+  {
+    verb: "call off",
+    definition: "cancel something",
+    example: "They decided to call off the meeting.",
+    phonetic: "/ˌkɔːl ˈɒf/",
+    translation: "لغو کردن"
+  },
+  {
+    verb: "carry on",
+    definition: "continue doing something",
+    example: "Let's carry on with the discussion.",
+    phonetic: "/ˌkæri ˈɒn/",
+    translation: "ادامه دادن"
+  },
+  {
+    verb: "do over",
+    definition: "do something again",
+    example: "The teacher made me do the assignment over.",
+    phonetic: "/ˌduː ˈəʊvə/",
+    translation: "دوباره انجام دادن"
+  },
+  {
+    verb: "eat out",
+    definition: "eat in a restaurant",
+    example: "We were too tired to cook, so we ate out.",
+    phonetic: "/ˌiːt ˈaʊt/",
+    translation: "بیرون غذا خوردن"
+  },
+  {
+    verb: "fall apart",
+    definition: "break into pieces",
+    example: "My old boots are falling apart.",
+    phonetic: "/ˌfɔːl əˈpɑːt/",
+    translation: "از هم پاشیدن"
+  },
+  {
+    verb: "fill out",
+    definition: "complete a form",
+    example: "Please fill out this application form.",
+    phonetic: "/ˌfɪl ˈaʊt/",
+    translation: "پر کردن (فرم)"
+  },
+  {
+    verb: "find out",
+    definition: "discover information",
+    example: "I need to find out what time the train leaves.",
+    phonetic: "/ˌfaɪnd ˈaʊt/",
+    translation: "فهمیدن / مطلع شدن"
+  },
+  {
+    verb: "get along",
+    definition: "have a good relationship",
+    example: "I get along well with my colleagues.",
+    phonetic: "/ˌɡet əˈlɒŋ/",
+    translation: "با هم کنار آمدن"
+  },
+  {
+    verb: "give up",
+    definition: "stop trying or stop a habit",
+    example: "He gave up smoking last year.",
+    phonetic: "/ˌɡɪv ˈʌp/",
+    translation: "تسلیم شدن / ترک کردن"
+  },
+  {
+    verb: "go on",
+    definition: "continue or happen",
+    example: "Please go on, I'm listening.",
+    phonetic: "/ˌɡəʊ ˈɒn/",
+    translation: "ادامه دادن / اتفاق افتادن"
+  },
+  {
+    verb: "grow up",
+    definition: "become an adult",
+    example: "What do you want to be when you grow up?",
+    phonetic: "/ˌɡrəʊ ˈʌp/",
+    translation: "بزرگ شدن"
+  },
+  {
+    verb: "hold on",
+    definition: "wait for a short time",
+    example: "Hold on a minute, I'll be right back.",
+    phonetic: "/ˌhəʊld ˈɒn/",
+    translation: "صبر کردن / منتظر ماندن"
+  },
+  {
+    verb: "keep on",
+    definition: "continue doing something",
+    example: "She kept on working despite the noise.",
+    phonetic: "/ˌkiːp ˈɒn/",
+    translation: "ادامه دادن"
+  },
+  {
+    verb: "look for",
+    definition: "try to find something",
+    example: "I'm looking for my keys.",
+    phonetic: "/ˌlʊk ˈfɔː/",
+    translation: "دنبال چیزی گشتن"
+  },
+  {
+    verb: "look up",
+    definition: "search for information in a book or online",
+    example: "I'll look up the word in the dictionary.",
+    phonetic: "/ˌlʊk ˈʌp/",
+    translation: "جستجو کردن (در کتاب/نت)"
+  },
+  {
+    verb: "pass out",
+    definition: "faint or lose consciousness",
+    example: "It was so hot that several people passed out.",
+    phonetic: "/ˌpɑːs ˈaʊt/",
+    translation: "از حال رفتن"
+  },
+  {
+    verb: "put off",
+    definition: "postpone something",
+    example: "Never put off until tomorrow what you can do today.",
+    phonetic: "/ˌpʊt ˈɒf/",
+    translation: "به تعویق انداختن"
+  },
+  {
+    verb: "run out",
+    definition: "have none left",
+    example: "We've run out of milk.",
+    phonetic: "/ˌrʌn ˈaʊt/",
+    translation: "تمام کردن"
+  },
+  {
+    verb: "show up",
+    definition: "arrive or appear",
+    example: "He didn't show up for the interview.",
+    phonetic: "/ˌʃəʊ ˈʌp/",
+    translation: "حاضر شدن"
+  },
+  {
+    verb: "turn down",
+    definition: "refuse an offer or request",
+    example: "She turned down the job offer.",
+    phonetic: "/ˌtɜːn ˈdaʊn/",
+    translation: "رد کردن"
+  },
+  {
+    verb: "wake up",
+    definition: "stop sleeping",
+    example: "I wake up at 7 AM every day.",
+    phonetic: "/ˌweɪk ˈʌp/",
+    translation: "بیدار شدن"
+  },
+  {
+    verb: "work out",
+    definition: "exercise or find a solution",
+    example: "I work out at the gym three times a week.",
+    phonetic: "/ˌwɜːk ˈaʊt/",
+    translation: "ورزش کردن / حل شدن"
+  },
+  {
+    verb: "check in",
+    definition: "arrive and register at a hotel or airport",
+    example: "We checked in at the hotel at 2 PM.",
+    phonetic: "/ˌtʃek ˈɪn/",
+    translation: "پذیرش شدن"
+  },
+  {
+    verb: "dress up",
+    definition: "wear formal or special clothes",
+    example: "You don't need to dress up for the party.",
+    phonetic: "/ˌdres ˈʌp/",
+    translation: "شیک پوشیدن"
+  },
+  {
+    verb: "get up",
+    definition: "get out of bed",
+    example: "What time do you usually get up?",
+    phonetic: "/ˌɡet ˈʌp/",
+    translation: "بلند شدن (از خواب)"
+  },
+  {
+    verb: "give away",
+    definition: "give something for free or reveal a secret",
+    example: "She gave away all her old clothes.",
+    phonetic: "/ˌɡɪv əˈweɪ/",
+    translation: "بخشیدن / لو دادن"
+  },
+  {
+    verb: "let down",
+    definition: "disappoint someone",
+    example: "I'm sorry I let you down.",
+    phonetic: "/ˌlet ˈdaʊn/",
+    translation: "ناامید کردن"
+  },
+  {
+    verb: "look after",
+    definition: "take care of someone or something",
+    example: "Could you look after my cat while I'm away?",
+    phonetic: "/ˌlʊk ˈɑːftə/",
+    translation: "مراقبت کردن"
+  },
+  {
+    verb: "run into",
+    definition: "meet someone by chance",
+    example: "I ran into an old friend yesterday.",
+    phonetic: "/ˌrʌn ˈɪntuː/",
+    translation: "اتفاقی دیدن"
+  },
+  {
+    verb: "set off",
+    definition: "start a journey",
+    example: "We set off early in the morning.",
+    phonetic: "/ˌset ˈɒf/",
+    translation: "راهی شدن / حرکت کردن"
+  },
+  {
+    verb: "try on",
+    definition: "put on clothes to see if they fit",
+    example: "I'd like to try on this jacket.",
+    phonetic: "/ˌtraɪ ˈɒn/",
+    translation: "پرو کردن"
+  },
+  {
+    verb: "watch out",
+    definition: "be careful",
+    example: "Watch out! There's a car coming.",
+    phonetic: "/ˌwɒtʃ ˈaʊt/",
+    translation: "مراقب بودن"
+  },
+  {
+    verb: "write down",
+    definition: "write something on paper",
+    example: "Write down his phone number.",
+    phonetic: "/ˌraɪt ˈdaʊn/",
+    translation: "یادداشت کردن"
+  },
+  {
+    verb: "break out",
+    definition: "start suddenly (like a war or fire)",
+    example: "War broke out in 1939.",
+    phonetic: "/ˌbreɪk ˈaʊt/",
+    translation: "شروع شدن (ناگهانی)"
+  },
+  {
+    verb: "catch up",
+    definition: "reach the same level or stage as someone",
+    example: "I need to catch up on my work.",
+    phonetic: "/ˌkætʃ ˈʌp/",
+    translation: "رسیدن به / جبران کردن"
+  },
+  {
+    verb: "drink up",
+    definition: "finish your drink completely",
+    example: "Drink up! It's time to go.",
+    phonetic: "/ˌdrɪŋk ˈʌp/",
+    translation: "تا ته نوشیدن"
+  },
+  {
+    verb: "follow through",
+    definition: "complete an action or task",
+    example: "He failed to follow through on his promise.",
+    phonetic: "/ˌfɒləʊ ˈθruː/",
+    translation: "تا آخر پیگیری کردن"
+  },
+  {
+    verb: "hand out",
+    definition: "distribute things to people",
+    example: "They handed out leaflets on the street.",
+    phonetic: "/ˌhænd ˈaʊt/",
+    translation: "توزیع کردن"
+  },
+  {
+    verb: "hurry up",
+    definition: "do something more quickly",
+    example: "Hurry up, or we'll be late!",
+    phonetic: "/ˌhʌri ˈʌp/",
+    translation: "عجله کردن"
+  },
+  {
+    verb: "look forward to",
+    definition: "wait for something with pleasure",
+    example: "I'm looking forward to seeing you.",
+    phonetic: "/ˌlʊk ˈfɔːwəd tuː/",
+    translation: "چشم انتظار بودن"
+  },
+  {
+    verb: "point out",
+    definition: "draw attention to something",
+    example: "He pointed out the mistake to me.",
+    phonetic: "/ˌpɔɪnt ˈaʊt/",
+    translation: "اشاره کردن / متذکر شدن"
+  },
+  {
+    verb: "put on",
+    definition: "wear clothes or turn on equipment",
+    example: "Put on your coat, it's cold outside.",
+    phonetic: "/ˌpʊt ˈɒn/",
+    translation: "پوشیدن"
+  },
+  {
+    verb: "run away",
+    definition: "escape from a place or situation",
+    example: "He ran away from home when he was fifteen.",
+    phonetic: "/ˌrʌn əˈweɪ/",
+    translation: "فرار کردن"
+  },
+  {
+    verb: "shut down",
+    definition: "stop operating (like a factory or computer)",
+    example: "The company had to shut down three factories.",
+    phonetic: "/ˌʃʌt ˈdaʊn/",
+    translation: "تعطیل کردن"
+  },
+  {
+    verb: "sit down",
+    definition: "take a seat",
+    example: "Please sit down and make yourself comfortable.",
+    phonetic: "/ˌsɪt ˈdaʊn/",
+    translation: "نشستن"
+  },
+  {
+    verb: "stand up",
+    definition: "rise to a vertical position",
+    example: "Everyone stood up when the judge entered.",
+    phonetic: "/ˌstænd ˈʌp/",
+    translation: "ایستادن"
+  },
+  {
+    verb: "stay in",
+    definition: "stay at home instead of going out",
+    example: "I think I'll stay in and watch a movie.",
+    phonetic: "/ˌsteɪ ˈɪn/",
+    translation: "در خانه ماندن"
+  },
+  {
+    verb: "take back",
+    definition: "return something or withdraw a statement",
+    example: "I take back what I said about him.",
+    phonetic: "/ˌteɪk ˈbæk/",
+    translation: "پس گرفتن / حرف خود را پس گرفتن"
+  },
+  {
+    verb: "throw away",
+    definition: "get rid of something unwanted",
+    example: "Don't throw away those old newspapers.",
+    phonetic: "/ˌθrəʊ əˈweɪ/",
+    translation: "دور انداختن"
+  },
+  {
+    verb: "try out",
+    definition: "test something to see if it works",
+    example: "I'm trying out a new recipe tonight.",
+    phonetic: "/ˌtraɪ ˈaʊt/",
+    translation: "آزمایش کردن"
+  },
+  {
+    verb: "turn off",
+    definition: "stop a machine or light",
+    example: "Please turn off the lights when you leave.",
+    phonetic: "/ˌtɜːn ˈɒf/",
+    translation: "خاموش کردن"
+  },
+  {
+    verb: "turn on",
+    definition: "start a machine or light",
+    example: "Can you turn on the heater?",
+    phonetic: "/ˌtɜːn ˈɒn/",
+    translation: "روشن کردن"
+  },
+  {
+    verb: "wait up",
+    definition: "not go to bed until someone arrives",
+    example: "Don't wait up for me, I'll be late.",
+    phonetic: "/ˌweɪt ˈʌp/",
+    translation: "بیدار ماندن منتظر کسی"
+  },
+  {
+    verb: "work on",
+    definition: "spend time improving or repair something",
+    example: "He's working on a new book.",
+    phonetic: "/ˌwɜːk ˈɒn/",
+    translation: "کار کردن روی"
+  },
+  {
+    verb: "zip up",
+    definition: "fasten with a zipper",
+    example: "Zip up your jacket, it's windy.",
+    phonetic: "/ˌzɪp ˈʌp/",
+    translation: "زیپ را بستن"
+  },
+  {
+    verb: "call back",
+    definition: "phone someone again",
+    example: "I'll call you back in ten minutes.",
+    phonetic: "/ˌkɔːl ˈbæk/",
+    translation: "دوباره زنگ زدن"
+  },
+  {
+    verb: "carry out",
+    definition: "perform a task or research",
+    example: "The study was carried out by experts.",
+    phonetic: "/ˌkæri ˈaʊt/",
+    translation: "انجام دادن"
+  },
+  {
+    verb: "clean up",
+    definition: "make a place tidy and clean",
+    example: "We spent the morning cleaning up the park.",
+    phonetic: "/ˌkliːn ˈʌp/",
+    translation: "تمیز کردن"
+  },
+  {
+    verb: "close down",
+    definition: "stop operating permanently",
+    example: "Many shops have closed down recently.",
+    phonetic: "/ˌkləʊz ˈdaʊn/",
+    translation: "برای همیشه تعطیل کردن"
+  },
+  {
+    verb: "come back",
+    definition: "return to a place",
+    example: "When are you coming back?",
+    phonetic: "/ˌkʌm ˈbæk/",
+    translation: "برگشتن"
+  },
+  {
+    verb: "cut off",
+    definition: "disconnect or interrupt",
+    example: "Our electricity was cut off.",
+    phonetic: "/ˌkʌt ˈɒf/",
+    translation: "قطع کردن"
+  },
+  {
+    verb: "die down",
+    definition: "become less strong or loud",
+    example: "The wind began to die down.",
+    phonetic: "/ˌdaɪ ˈdaʊn/",
+    translation: "فروکش کردن"
+  },
+  {
+    verb: "drop out",
+    definition: "leave school or a competition",
+    example: "He dropped out of college after one year.",
+    phonetic: "/ˌdrɒp ˈaʊt/",
+    translation: "ترک تحصیل کردن"
+  },
+  {
+    verb: "fall out",
+    definition: "have an argument and stop being friends",
+    example: "They fell out over a silly mistake.",
+    phonetic: "/ˌfɔːl ˈaʊt/",
+    translation: "قهر کردن"
+  },
+  {
+    verb: "get by",
+    definition: "manage to survive with little money",
+    example: "It's hard to get by on such a low salary.",
+    phonetic: "/ˌɡet ˈbaɪ/",
+    translation: "گذران زندگی کردن"
+  },
+  {
+    verb: "go through",
+    definition: "experience a difficult situation",
+    example: "She's going through a hard time.",
+    phonetic: "/ˌɡəʊ ˈθruː/",
+    translation: "تجربه کردن (سختی)"
+  },
+  {
+    verb: "grow out of",
+    definition: "become too big for clothes",
+    example: "He's grown out of his shoes already.",
+    phonetic: "/ˌɡrəʊ ˈaʊt əv/",
+    translation: "بزرگتر شدن از (لباس)"
+  },
+  {
+    verb: "hold up",
+    definition: "delay or rob using a weapon",
+    example: "Sorry I'm late, I got held up in traffic.",
+    phonetic: "/ˌhəʊld ˈʌp/",
+    translation: "به تاخیر انداختن / راهزنی"
+  },
+  {
+    verb: "knock out",
+    definition: "make unconscious or eliminate from competition",
+    example: "The boxer was knocked out in the third round.",
+    phonetic: "/ˌnɒk ˈaʊt/",
+    translation: "بیهوش کردن"
+  },
+  {
+    verb: "leave out",
+    definition: "not include someone or something",
+    example: "Don't leave me out of the conversation.",
+    phonetic: "/ˌliːv ˈaʊt/",
+    translation: "جا انداختن / نادیده گرفتن"
+  },
+  {
+    verb: "let in",
+    definition: "allow someone to enter",
+    example: "She opened the door to let him in.",
+    phonetic: "/ˌlet ˈɪn/",
+    translation: "راه دادن"
+  },
+  {
+    verb: "live on",
+    definition: "have money for basic needs",
+    example: "They live on a very small pension.",
+    phonetic: "/ˌlɪv ˈɒn/",
+    translation: "با مبلغی زندگی کردن"
+  },
+  {
+    verb: "look down on",
+    definition: "think you are better than someone",
+    example: "She looks down on people who haven't been to university.",
+    phonetic: "/ˌlʊk ˈdaʊn ɒn/",
+    translation: "تحقیر کردن"
+  },
+  {
+    verb: "pay off",
+    definition: "finish paying a debt or result in success",
+    example: "All her hard work finally paid off.",
+    phonetic: "/ˌpeɪ ˈɒf/",
+    translation: "تسویه کردن / به ثمر نشستن"
+  },
+  {
+    verb: "put away",
+    definition: "put something in its correct place",
+    example: "Put your toys away when you're finished.",
+    phonetic: "/ˌpʊt əˈweɪ/",
+    translation: "سر جای خود گذاشتن"
+  },
+  {
+    verb: "put out",
+    definition: "extinguish a fire or cigarette",
+    example: "It took firefighters three hours to put out the fire.",
+    phonetic: "/ˌpʊt ˈaʊt/",
+    translation: "خاموش کردن (آتش)"
+  },
+  {
+    verb: "read over",
+    definition: "read something carefully to check it",
+    example: "Read over your work before you hand it in.",
+    phonetic: "/ˌriːd ˈəʊvə/",
+    translation: "بازخوانی کردن"
+  },
+  {
+    verb: "rip off",
+    definition: "charge someone too much money",
+    example: "They really ripped us off in that restaurant.",
+    phonetic: "/ˌrɪp ˈɒf/",
+    translation: "تیغ زدن / گران فروختن"
+  },
+  {
+    verb: "run over",
+    definition: "hit with a vehicle",
+    example: "The dog was run over by a car.",
+    phonetic: "/ˌrʌn ˈəʊvə/",
+    translation: "زیر گرفتن"
+  },
+  {
+    verb: "send back",
+    definition: "return something because it is unsuitable",
+    example: "The food was cold, so I sent it back.",
+    phonetic: "/ˌsend ˈbæk/",
+    translation: "پس فرستادن"
+  },
+  {
+    verb: "settle down",
+    definition: "become calm or start living a quiet life",
+    example: "He finally settled down and got married.",
+    phonetic: "/ˌsetl ˈdaʊn/",
+    translation: "آرام گرفتن / سر و سامان گرفتن"
+  },
+  {
+    verb: "shop around",
+    definition: "compare prices before buying",
+    example: "It's worth shopping around for the best deal.",
+    phonetic: "/ˌʃɒp əˈraʊnd/",
+    translation: "قیمت گرفتن"
+  },
+  {
+    verb: "show off",
+    definition: "try to impress others with your abilities",
+    example: "He likes to show off his new car.",
+    phonetic: "/ˌʃəʊ ˈɒf/",
+    translation: "پز دادن"
+  },
+  {
+    verb: "sort out",
+    definition: "organise something or solve a problem",
+    example: "I need to sort out these papers.",
+    phonetic: "/ˌsɔːt ˈaʊt/",
+    translation: "مرتب کردن / حل و فصل کردن"
+  },
+  {
+    verb: "speak up",
+    definition: "speak louder or state opinion",
+    example: "Could you speak up? I can't hear you.",
+    phonetic: "/ˌspiːk ˈʌp/",
+    translation: "بلندتر حرف زدن / ابراز عقیده"
+  },
+  {
+    verb: "split up",
+    definition: "end a relationship or separate into groups",
+    example: "The band split up last year.",
+    phonetic: "/ˌsplɪt ˈʌp/",
+    translation: "جدا شدن"
+  },
+  {
+    verb: "stand for",
+    definition: "represent or tolerate",
+    example: "What does EU stand for?",
+    phonetic: "/ˌstænd ˈfɔː/",
+    translation: "مخفف چیزی بودن / تحمل کردن"
+  },
+  {
+    verb: "stay up",
+    definition: "not go to bed",
+    example: "I stayed up late to watch the game.",
+    phonetic: "/ˌsteɪ ˈʌp/",
+    translation: "بیدار ماندن"
+  },
+  {
+    verb: "tell off",
+    definition: "speak angrily to someone because of bad behavior",
+    example: "The teacher told him off for being late.",
+    phonetic: "/ˌtel ˈɒf/",
+    translation: "سرزنش کردن"
+  },
+  {
+    verb: "try out for",
+    definition: "try to be chosen for a team or position",
+    example: "He's trying out for the school play.",
+    phonetic: "/ˌtraɪ ˈaʊt fɔː/",
+    translation: "تست دادن برای"
+  },
+  {
+    verb: "turn around",
+    definition: "change direction or make successful",
+    example: "The new manager turned the company around.",
+    phonetic: "/ˌtɜːn əˈraʊnd/",
+    translation: "تغییر جهت دادن / متحول کردن"
+  },
+  {
+    verb: "turn out",
+    definition: "have a particular result or happen",
+    example: "It turned out that I was right.",
+    phonetic: "/ˌtɜːn ˈaʊt/",
+    translation: "معلوم شدن / از آب درآمدن"
+  },
+  {
+    verb: "turn up",
+    definition: "arrive or increase volume",
+    example: "She finally turned up at the party.",
+    phonetic: "/ˌtɜːn ˈʌp/",
+    translation: "پیدا شدن / بلند کردن صدا"
+  },
+  {
+    verb: "wait on",
+    definition: "serve someone in a restaurant",
+    example: "He waited on us yesterday.",
+    phonetic: "/ˌweɪt ˈɒn/",
+    translation: "خدمت کردن (در رستوران)"
+  },
+  {
+    verb: "watch out for",
+    definition: "be careful of a specific danger",
+    example: "Watch out for pickpockets.",
+    phonetic: "/ˌwɒtʃ ˈaʊt fɔː/",
+    translation: "مواظب کسی/چیزی بودن"
+  },
+  {
+    verb: "wear off",
+    definition: "gradually disappear (like an effect)",
+    example: "The painkiller is starting to wear off.",
+    phonetic: "/ˌweər ˈɒf/",
+    translation: "از بین رفتن اثر"
+  },
+  {
+    verb: "wipe out",
+    definition: "destroy completely",
+    example: "The village was wiped out by the flood.",
+    phonetic: "/ˌwaɪp ˈaʊt/",
+    translation: "به کلی نابود کردن"
+  },
+  {
+    verb: "work through",
+    definition: "deal with a problem to reach a solution",
+    example: "We need to work through our differences.",
+    phonetic: "/ˌwɜːk ˈθruː/",
+    translation: "حل و فصل کردن"
+  },
+  {
+    verb: "write out",
+    definition: "write in full detail",
+    example: "Write out the procedure.",
+    phonetic: "/ˌraɪt ˈaʊt/",
+    translation: "با جزئیات نوشتن"
+  },
+  {
+    verb: "yield to",
+    definition: "give in to persuasion or allow others go first",
+    example: "Yield to traffic on the left.",
+    phonetic: "/ˌjiːld ˈtuː/",
+    translation: "تسلیم شدن / حق تقدم دادن"
+  },
+  {
+    verb: "zoom in",
+    definition: "make an image look larger",
+    example: "Zoom in on the map.",
+    phonetic: "/ˌzuːm ˈɪn/",
+    translation: "بزرگنمایی کردن"
+  },
+  {
+    verb: "aim at",
+    definition: "point or direct something at a target",
+    example: "The program is aimed at young people.",
+    phonetic: "/ˌeɪm ˈæt/",
+    translation: "هدف گرفتن"
+  },
+  {
+    verb: "ask around",
+    definition: "ask many people for info or help",
+    example: "I'll ask around and see if anyone knows.",
+    phonetic: "/ˌɑːsk əˈraʊnd/",
+    translation: "از بقیه پرس‌وجو کردن"
+  },
+  {
+    verb: "back off",
+    definition: "move away or stop bothering",
+    example: "Back off and let me think!",
+    phonetic: "/ˌbæk ˈɒf/",
+    translation: "عقب کشیدن"
+  },
+  {
+    verb: "bear with",
+    definition: "be patient with someone",
+    example: "Bear with me for a moment.",
+    phonetic: "/ˌbeə ˈwɪð/",
+    translation: "صبر کردن با"
+  },
+  {
+    verb: "beat up",
+    definition: "attack someone and hit them many times",
+    example: "He was beaten up by a gang.",
+    phonetic: "/ˌbiːt ˈʌp/",
+    translation: "کتک زدن"
+  },
+  {
+    verb: "believe in",
+    definition: "be certain that something exists",
+    example: "Do you believe in ghosts?",
+    phonetic: "/bɪˈliːv ɪn/",
+    translation: "باور داشتن به"
+  },
+  {
+    verb: "bite off",
+    definition: "separate something using teeth",
+    example: "Don't bite off more than you can chew.",
+    phonetic: "/ˌbaɪt ˈɒf/",
+    translation: "گاز گرفتن"
+  },
+  {
+    verb: "block out",
+    definition: "stop light or sound or try to forget",
+    example: "Blackout curtains block out the light.",
+    phonetic: "/ˌblɒk ˈaʊt/",
+    translation: "مسدود کردن (نور/فکر)"
+  },
+  {
+    verb: "blow out",
+    definition: "extinguish light with air",
+    example: "Blow out the candles.",
+    phonetic: "/ˌbləʊ ˈaʊt/",
+    translation: "فوت کردن و خاموش کردن"
+  },
+  {
+    verb: "boil over",
+    definition: "liquid overflows container when boiling",
+    example: "The milk boiled over.",
+    phonetic: "/ˌbɔɪl ˈəʊvə/",
+    translation: "سر رفتن (غذا)"
+  },
+  {
+    verb: "break into",
+    definition: "enter building by force",
+    example: "Someone broke into the house.",
+    phonetic: "/ˌbreɪk ˈɪntuː/",
+    translation: "به زور وارد شدن"
+  },
+  {
+    verb: "brace for",
+    definition: "prepare yourself for something difficult",
+    example: "Brace for impact!",
+    phonetic: "/ˌbreɪs ˈfɔː/",
+    translation: "آماده شدن (برای سختی)"
+  },
+  {
+    verb: "bring down",
+    definition: "cause government to fall or reduce price",
+    example: "Scandal brought down the government.",
+    phonetic: "/ˌbrɪŋ ˈdaʊn/",
+    translation: "سرنگون کردن / کاهش دادن"
+  },
+  {
+    verb: "buckle up",
+    definition: "fasten your seatbelt",
+    example: "Buckle up, we're leaving.",
+    phonetic: "/ˌbʌkl ˈʌp/",
+    translation: "کمربند را بستن"
+  },
+  {
+    verb: "burn down",
+    definition: "destroy building by fire",
+    example: "The house burnt down.",
+    phonetic: "/ˌbɜːn ˈdaʊn/",
+    translation: "در آتش سوختن"
+  },
+  {
+    verb: "burst out",
+    definition: "suddenly start doing something",
+    example: "Burst out laughing.",
+    phonetic: "/ˌbɜːst ˈaʊt/",
+    translation: "یک دفعه شروع کردن (خنده/گریه)"
+  },
+  {
+    verb: "butt in",
+    definition: "interrupt a conversation rudely",
+    example: "Don't butt in while I'm talking.",
+    phonetic: "/ˌbʌt ˈɪn/",
+    translation: "پریدن وسط حرف"
+  },
+  {
+    verb: "call around",
+    definition: "phone many people for info",
+    example: "Call around for prices.",
+    phonetic: "/ˌkɔːl əˈraʊnd/",
+    translation: "به چند جا زنگ زدن"
+  },
+  {
+    verb: "calm down",
+    definition: "become less excited or angry",
+    example: "Calm down and tell me.",
+    phonetic: "/ˌkɑːm ˈdaʊn/",
+    translation: "آرام شدن"
+  },
+  {
+    verb: "care for",
+    definition: "look after or like someone",
+    example: "Care for the elderly.",
+    phonetic: "/ˈkeə fɔː/",
+    translation: "مراقب بودن / دوست داشتن"
+  },
+  {
+    verb: "check over",
+    definition: "examine carefully for mistakes",
+    example: "Check over your essay.",
+    phonetic: "/ˌtʃek ˈəʊvə/",
+    translation: "با دقت چک کردن"
+  },
+  {
+    verb: "cheer up",
+    definition: "start feeling happier",
+    example: "Cheer up, it's not that bad.",
+    phonetic: "/ˌtʃɪər ˈʌp/",
+    translation: "خوشحال شدن"
+  },
+  {
+    verb: "chicken out",
+    definition: "decide not to do something through fear",
+    example: "Chickened out of the jump.",
+    phonetic: "/ˌtʃɪkɪn ˈaʊt/",
+    translation: "جا زدن (از ترس)"
+  },
+  {
+    verb: "chop up",
+    definition: "cut into small pieces",
+    example: "Chop up the onions.",
+    phonetic: "/ˌtʃɒp ˈʌp/",
+    translation: "خرد کردن"
+  },
+  {
+    verb: "clam up",
+    definition: "refuse to speak especially through fear",
+    example: "He clammed up during questioning.",
+    phonetic: "/ˌklæm ˈʌp/",
+    translation: "لال مانی گرفتن"
+  },
+  {
+    verb: "clear out",
+    definition: "tidy and get rid of unwanted things",
+    example: "Clear out the garage.",
+    phonetic: "/ˌklɪər ˈaʊt/",
+    translation: "خالی و تمیز کردن"
+  },
+  {
+    verb: "clog up",
+    definition: "become blocked",
+    example: "Hair clogged up the sink.",
+    phonetic: "/ˌklɒɡ ˈʌp/",
+    translation: "مسدود شدن"
+  },
+  {
+    verb: "close off",
+    definition: "separate area from others",
+    example: "Police closed off the street.",
+    phonetic: "/ˌkləʊz ˈɒf/",
+    translation: "بستن (مسیر/منطقه)"
+  },
+  {
+    verb: "come back to",
+    definition: "return to a topic",
+    example: "Come back to that point later.",
+    phonetic: "/ˌkʌm ˈbæk tuː/",
+    translation: "برگشتن به (موضوع)"
+  },
+  {
+    verb: "come by",
+    definition: "get something difficult to find",
+    example: "Cheap flats are hard to come by.",
+    phonetic: "/ˌkʌm ˈbaɪ/",
+    translation: "به دست آوردن"
+  },
+  {
+    verb: "come down with",
+    definition: "start to suffer from illness",
+    example: "Came down with a cold.",
+    phonetic: "/ˌkʌm ˈdaʊn wɪð/",
+    translation: "مریض شدن"
+  },
+  {
+    verb: "come forward",
+    definition: "offer help or information",
+    example: "Witnesses should come forward.",
+    phonetic: "/ˌkʌm ˈfɔːwəd/",
+    translation: "پیشقدم شدن (کمک)"
+  },
+  {
+    verb: "count on",
+    definition: "rely on someone",
+    example: "Can always count on her.",
+    phonetic: "/ˈkaʊnt ɒn/",
+    translation: "حساب کردن روی"
+  },
+  {
+    verb: "cross out",
+    definition: "draw line through something written",
+    example: "Cross out the mistake.",
+    phonetic: "/ˌkrɒs ˈaʊt/",
+    translation: "خط زدن"
+  },
+  {
+    verb: "deal with",
+    definition: "take action to solve problem",
+    example: "Deal with the customer.",
+    phonetic: "/ˈdiːl wɪð/",
+    translation: "رسیدگی کردن"
+  },
+  {
+    verb: "dig in",
+    definition: "start eating with enthusiasm",
+    example: "The food's getting cold, dig in!",
+    phonetic: "/ˌdɪɡ ˈɪn/",
+    translation: "حمله کردن به غذا"
+  },
+  {
+    verb: "do without",
+    definition: "manage without something",
+    example: "Learn to do without sugar.",
+    phonetic: "/ˌduː wɪˈðaʊt/",
+    translation: "بدون چیزی سر کردن"
+  },
+  {
+    verb: "drag on",
+    definition: "continue longer than expected",
+    example: "Meeting dragged on for hours.",
+    phonetic: "/ˌdræɡ ˈɒn/",
+    translation: "لفت دادن / طولانی شدن"
+  },
+  {
+    verb: "draw up",
+    definition: "prepare a document",
+    example: "Draw up a contract.",
+    phonetic: "/ˌdrɔː ˈʌp/",
+    translation: "تنظیم کردن (قرارداد)"
+  },
+  {
+    verb: "dream up",
+    definition: "invent something very unusual",
+    example: "Dreamed up a new scheme.",
+    phonetic: "/ˌdriːm ˈʌp/",
+    translation: "در رویا پروراندن"
+  },
+  {
+    verb: "drop in",
+    definition: "visit someone without arranging it",
+    example: "Drop in for a coffee.",
+    phonetic: "/ˌdrɒp ˈɪn/",
+    translation: "سر زده آمدن"
+  },
+  {
+    verb: "drop off",
+    definition: "take someone somewhere or fall asleep",
+    example: "Drop you off at the station.",
+    phonetic: "/ˌdrɒp ˈɒf/",
+    translation: "پیاده کردن / خواب رفتن"
   }
 ];
 
