@@ -50,6 +50,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [customVerbs, setCustomVerbs] = useState<PhrasalVerb[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [inputText, setInputText] = useState('');
   const [masteredVerbs, setMasteredVerbs] = useState<Set<string>>(new Set());
   const [showOnlyUnmastered, setShowOnlyUnmastered] = useState(true); // Default to true as requested
@@ -94,11 +95,26 @@ export default function App() {
   // Auth Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
+      console.log("Auth state changed:", u?.email);
       setUser(u);
       setIsInitialLoad(false);
     });
     return () => unsubscribe();
   }, []);
+
+  const handleLogin = async () => {
+    setIsLoggingIn(true);
+    try {
+      const result = await loginWithGoogle();
+      if (result) {
+        setUser(result.user);
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
 
   const allVerbs = useMemo(() => {
     const combined = [...PHRASAL_VERBS_DATA, ...customVerbs];
@@ -161,6 +177,18 @@ export default function App() {
     }
   };
 
+  if (isInitialLoad) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
+        <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-indigo-100 animate-pulse mb-4">
+          <BookOpen size={32} />
+        </div>
+        <Loader2 className="animate-spin text-indigo-600" size={24} />
+        <p className="mt-4 text-xs font-black uppercase tracking-widest text-indigo-500">Initializing Guru...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#FDFDFD] text-gray-900 font-sans selection:bg-indigo-100 selection:text-indigo-900">
       {/* Navigation Header */}
@@ -208,11 +236,16 @@ export default function App() {
               </button>
             ) : (
               <button 
-                onClick={loginWithGoogle}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white border border-gray-200 rounded-xl text-[10px] sm:text-xs font-bold hover:border-indigo-500 transition-all shadow-sm"
+                onClick={handleLogin}
+                disabled={isLoggingIn}
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white border border-gray-200 rounded-xl text-[10px] sm:text-xs font-bold hover:border-indigo-500 transition-all shadow-sm disabled:opacity-50"
               >
-                <UserIcon size={14} className="text-indigo-600" />
-                Login
+                {isLoggingIn ? (
+                  <Loader2 size={14} className="animate-spin text-indigo-600" />
+                ) : (
+                  <UserIcon size={14} className="text-indigo-600" />
+                )}
+                {isLoggingIn ? 'Connecting...' : 'Login'}
               </button>
             )}
             

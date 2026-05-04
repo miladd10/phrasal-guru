@@ -60,7 +60,17 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 }
 
 // Auth Helpers
-export const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
+export const loginWithGoogle = async () => {
+  try {
+    return await signInWithPopup(auth, googleProvider);
+  } catch (error: any) {
+    if (error.code === 'auth/popup-closed-by-user') {
+      return null;
+    }
+    console.error("Auth Error:", error);
+    throw error;
+  }
+};
 export const logout = () => signOut(auth);
 
 // Data Helpers
