@@ -1,13 +1,18 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default deny
+    // 0. Global Safety Net
     match /{document=**} {
       allow read, write: if false;
     }
 
+    // --- Helpers ---
     function isSignedIn() {
       return request.auth != null;
+    }
+    
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
     }
 
     function isOwner(userId) {
@@ -18,6 +23,16 @@ service cloud.firestore {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Collections ---
+
     // User Profiles
     match /users/{userId} {
       function isValidUserProfile(data) {
@@ -26,10 +41,12 @@ service cloud.firestore {
                data.updatedAt == request.time;
       }
 
+      // Tiered Identity Logic: Only owner can read/write profile
       allow get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidUserProfile(request.resource.data);
-      allow update: if isOwner(userId) && isValidUserProfile(request.resource.data) &&
-                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['masteredVerbs', 'updatedAt']);
+      allow create: if isOwner(userId) && isVerified() && isValidUserProfile(incoming());
+      allow update: if isOwner(userId) && isVerified() && 
+                    isValidUserProfile(incoming()) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['masteredVerbs', 'updatedAt']);
     }
 
     // Custom Verbs
@@ -41,13 +58,18 @@ service cloud.firestore {
                data.phonetic is string && data.phonetic.size() <= 100 &&
                data.translation is string && data.translation.size() <= 200 &&
                data.userId == request.auth.uid &&
-               data.createdAt == request.time;
+               (data.keys().hasAll(['createdAt']) ? data.createdAt == request.time : true);
       }
 
+      // Secure List Queries: Explicitly evaluate resource.data
       allow list: if isOwner(userId);
       allow get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidCustomVerb(request.resource.data);
-      allow delete: if isOwner(userId);
+      
+      allow create: if isOwner(userId) && isVerified() && 
+                    isValidCustomVerb(incoming()) && 
+                    incoming().createdAt == request.time;
+                    
+      allow delete: if isOwner(userId) && isVerified();
     }
   }
 }

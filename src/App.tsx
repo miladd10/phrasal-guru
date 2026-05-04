@@ -55,37 +55,46 @@ export default function App() {
   const [showOnlyUnmastered, setShowOnlyUnmastered] = useState(true); // Default to true as requested
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Auth & Mastered List Sync
+  // Mastered List Sync
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (u) => {
-      setUser(u);
-      if (u) {
-        // Fetch mastered list
-        const userDoc = doc(db, 'users', u.uid);
-        try {
-          const snap = await getDoc(userDoc);
-          if (snap.exists()) {
-            setMasteredVerbs(new Set(snap.data().masteredVerbs || []));
-          }
-        } catch (error) {
-          console.error("Error fetching user data", error);
+    if (!user) {
+      setMasteredVerbs(new Set());
+      setCustomVerbs([]);
+      return;
+    }
+
+    // Fetch mastered list (Initial)
+    const userDoc = doc(db, 'users', user.uid);
+    getDoc(userDoc)
+      .then(snap => {
+        if (snap.exists()) {
+          setMasteredVerbs(new Set(snap.data().masteredVerbs || []));
         }
+      })
+      .catch(error => handleFirestoreError(error, OperationType.GET, `users/${user.uid}`));
 
-        // Keep custom verbs in sync
-        const q = query(collection(db, 'users', u.uid, 'customVerbs'));
-        const unsubVerbs = onSnapshot(q, (snapshot) => {
-          const verbs: PhrasalVerb[] = [];
-          snapshot.forEach((doc) => {
-            verbs.push(doc.data() as PhrasalVerb);
-          });
-          setCustomVerbs(verbs);
-        }, (error) => handleFirestoreError(error, OperationType.GET, `users/${u.uid}/customVerbs`));
-
-        return () => unsubVerbs();
-      } else {
-        setMasteredVerbs(new Set());
-        setCustomVerbs([]);
+    // Keep custom verbs in sync (Listener)
+    const q = query(collection(db, 'users', user.uid, 'customVerbs'));
+    const unsubVerbs = onSnapshot(q, (snapshot) => {
+      const verbs: PhrasalVerb[] = [];
+      snapshot.forEach((doc) => {
+        verbs.push({ id: doc.id, ...doc.data() } as PhrasalVerb);
+      });
+      setCustomVerbs(verbs);
+    }, (error) => {
+      // Only report error if we still have a user (prevents logout noise)
+      if (auth.currentUser) {
+        handleFirestoreError(error, OperationType.GET, `users/${user.uid}/customVerbs`);
       }
+    });
+
+    return () => unsubVerbs();
+  }, [user]);
+
+  // Auth Listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      setUser(u);
       setIsInitialLoad(false);
     });
     return () => unsubscribe();
