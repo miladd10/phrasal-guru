@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // User Profiles
+    match /users/{userId} {
+      function isValidUserProfile(data) {
+        return data.masteredVerbs is list &&
+               data.masteredVerbs.size() <= 2000 &&
+               data.updatedAt == request.time;
+      }
+
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserProfile(request.resource.data);
+      allow update: if isOwner(userId) && isValidUserProfile(request.resource.data) &&
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['masteredVerbs', 'updatedAt']);
+    }
+
+    // Custom Verbs
+    match /users/{userId}/customVerbs/{verbId} {
+      function isValidCustomVerb(data) {
+        return data.verb is string && data.verb.size() <= 100 &&
+               data.definition is string && data.definition.size() <= 500 &&
+               data.example is string && data.example.size() <= 1000 &&
+               data.phonetic is string && data.phonetic.size() <= 100 &&
+               data.translation is string && data.translation.size() <= 200 &&
+               data.userId == request.auth.uid &&
+               data.createdAt == request.time;
+      }
+
+      allow list: if isOwner(userId);
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidCustomVerb(request.resource.data);
+      allow delete: if isOwner(userId);
+    }
+  }
+}

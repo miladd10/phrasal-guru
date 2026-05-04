@@ -1,0 +1,47 @@
+{
+  "entities": {
+    "userProfile": {
+      "title": "User Profile",
+      "description": "Stores user mastery and preferences.",
+      "type": "object",
+      "properties": {
+        "masteredVerbs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of phrasal verbs the user has mastered."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last time the profile was updated."
+        }
+      },
+      "required": ["masteredVerbs", "updatedAt"]
+    },
+    "customVerb": {
+      "title": "Custom Verb",
+      "description": "Phrasal verbs added by the user.",
+      "type": "object",
+      "properties": {
+        "verb": { "type": "string" },
+        "definition": { "type": "string" },
+        "example": { "type": "string" },
+        "phonetic": { "type": "string" },
+        "translation": { "type": "string" },
+        "userId": { "type": "string", "description": "The owner of this custom verb." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["verb", "definition", "example", "phonetic", "translation", "userId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "userProfile",
+      "description": "User preferences and mastery state."
+    },
+    "/users/{userId}/customVerbs/{verbId}": {
+      "schema": "customVerb",
+      "description": "Custom verbs added by the specific user."
+    }
+  }
+}
