@@ -28,7 +28,7 @@
         "example": { "type": "string" },
         "phonetic": { "type": "string" },
         "translation": { "type": "string" },
-        "category": { "type": "string", "enum": ["phrasal", "idiom", "unit2", "unit4", "unit6", "unit8", "unit10", "unit12", "unit14", "unit16", "unit18", "unit20", "unit22", "unit24", "unit26"] },
+        "category": { "type": "string", "enum": ["phrasal", "idiom", "unit0", "unit2", "unit4", "unit6", "unit8", "unit10", "unit12", "unit14", "unit16", "unit18", "unit20", "unit22", "unit24", "unit26"] },
         "userId": { "type": "string", "description": "The owner of this vocabulary item." },
         "createdAt": { "type": "string", "format": "date-time" }
       },

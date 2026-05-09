@@ -48,7 +48,8 @@ const shuffle = <T,>(array: T[]): T[] => {
 
 export default function App() {
   const [activeCategory, setActiveCategory] = useState<Category | 'words'>('phrasal');
-  const [selectedUnit, setSelectedUnit] = useState<'unit2' | 'unit4' | 'unit6' | 'unit8' | 'unit10' | 'unit12' | 'unit14' | 'unit16' | 'unit18' | 'unit20' | 'unit22' | 'unit24' | 'unit26'>('unit2');
+  const [selectedUnit, setSelectedUnit] = useState<'unit0' | 'unit2' | 'unit4' | 'unit6' | 'unit8' | 'unit10' | 'unit12' | 'unit14' | 'unit16' | 'unit18' | 'unit20' | 'unit22' | 'unit24' | 'unit26'>('unit2');
+  const [addCategory, setAddCategory] = useState<'phrasal' | 'idiom' | 'unit0'>('phrasal');
   const [user, setUser] = useState<User | null>(null);
   
   useEffect(() => {
@@ -186,7 +187,7 @@ export default function App() {
     if (!inputText.trim()) return;
     setIsProcessing(true);
     try {
-      const targetCat = activeCategory === 'words' ? selectedUnit : activeCategory;
+      const targetCat = addCategory;
       const newVerbs = await enrichPhrasalVerb(inputText, targetCat as Category);
       if (user) {
         for (const v of newVerbs) {
@@ -207,11 +208,12 @@ export default function App() {
   if (isInitialLoad) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
-        <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-indigo-100 animate-pulse mb-4">
-          <BookOpen size={32} />
+        <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center overflow-hidden shadow-xl shadow-indigo-100 animate-pulse mb-4">
+          <img src="/logo.png" alt="Lexis Logo" className="w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
+          <BookOpen size={32} className="absolute text-white" />
         </div>
         <Loader2 className="animate-spin text-indigo-600" size={24} />
-        <p className="mt-4 text-xs font-black uppercase tracking-widest text-indigo-500">Initializing Guru...</p>
+        <p className="mt-4 text-xs font-black uppercase tracking-widest text-indigo-500">Initializing Lexis...</p>
       </div>
     );
   }
@@ -222,11 +224,12 @@ export default function App() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-600 rounded-xl sm:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100 ring-4 ring-indigo-50">
-              <BookOpen size={20} className="sm:w-6 sm:h-6" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-600 rounded-xl sm:rounded-2xl flex items-center justify-center overflow-hidden shadow-lg shadow-indigo-100 ring-4 ring-indigo-50 relative">
+              <img src="/logo.png" alt="Lexis Logo" className="w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
+              <BookOpen size={20} className="sm:w-6 sm:h-6 absolute text-white" />
             </div>
             <div>
-              <h1 className="text-lg sm:text-xl font-black tracking-tight text-gray-900 leading-none">Phrasal Guru</h1>
+              <h1 className="text-lg sm:text-xl font-black tracking-tight text-gray-900 leading-none">Lexis</h1>
               <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] text-indigo-500 font-black">Vocabulary System</p>
             </div>
           </div>
@@ -288,7 +291,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-12 sm:pb-6">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-4 sm:pb-2">
         <div className="w-full max-w-lg mb-2 sm:mb-4 flex flex-col items-center gap-4 px-2 sm:px-4 mx-auto">
              <div className="flex bg-gray-100 p-1 rounded-full shadow-inner overflow-x-auto max-w-full">
                <button 
@@ -324,6 +327,7 @@ export default function App() {
                     onChange={(e) => setSelectedUnit(e.target.value as any)}
                     className="appearance-none bg-white border border-gray-200 text-gray-700 text-[10px] font-black uppercase tracking-widest px-8 py-2.5 rounded-full pr-10 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-sm transition-all hover:bg-gray-50"
                   >
+                    <option value="unit0">Unit 0: Others</option>
                     <option value="unit2">Unit 2: Thinking & Learning</option>
                     <option value="unit4">Unit 4: Change & Tech</option>
                     <option value="unit6">Unit 6: Time & Work</option>
@@ -389,7 +393,7 @@ export default function App() {
                     </button>
                   </div>
 
-                  <div className="flex justify-center pb-8">
+                  <div className="flex justify-center pb-4">
                     <button 
                       onClick={() => setShowOnlyUnmastered(!showOnlyUnmastered)}
                       className={`text-[9px] uppercase tracking-wider font-extrabold px-6 py-2 rounded-full border transition-all ${
@@ -494,14 +498,41 @@ export default function App() {
             >
               <div className="text-center">
                 <Sparkles className="mx-auto text-indigo-500 mb-4" size={40} />
-                <h2 className="text-2xl font-bold text-gray-900">Add New {activeCategory === 'phrasal' ? 'Phrasal Verb' : activeCategory === 'idiom' ? 'Idiom' : 'Vocabulary Item'}</h2>
-                <p className="text-gray-500 mt-2">Paste raw text from a book or list. Our AI will automatically extract {activeCategory === 'phrasal' ? 'verbs' : activeCategory === 'idiom' ? 'idioms' : 'words'}, definitions, phonetics, and translations.</p>
+                <h2 className="text-2xl font-bold text-gray-900">Add New Vocabulary</h2>
+                <p className="text-gray-500 mt-2">Paste raw text from a book or list. Our AI will automatically extract items, definitions, phonetics, and translations.</p>
+              </div>
+
+              <div className="flex justify-center bg-gray-100 p-1.5 rounded-2xl shadow-inner max-w-sm mx-auto">
+                <button 
+                  onClick={() => setAddCategory('phrasal')}
+                  className={`flex-1 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    addCategory === 'phrasal' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  Phrasals
+                </button>
+                <button 
+                  onClick={() => setAddCategory('idiom')}
+                  className={`flex-1 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    addCategory === 'idiom' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  Idioms
+                </button>
+                <button 
+                  onClick={() => setAddCategory('unit0')}
+                  className={`flex-1 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    addCategory === 'unit0' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  Words
+                </button>
               </div>
 
               <div className="space-y-4">
                 <textarea
                   className="w-full h-64 bg-white border border-gray-200 rounded-3xl p-6 outline-none focus:border-indigo-500 transition-colors shadow-sm resize-none"
-                  placeholder={activeCategory === 'phrasal' ? "Example: add up to combine to produce a particular result or effect: These new measures do not add up to genuine reform..." : activeCategory === 'idiom' ? "Example: a drop in the ocean A very small amount that will not have much effect..." : "Example: assess to judge or evaluate someone or something carefully..."}
+                  placeholder={addCategory === 'phrasal' ? "Example: add up to combine to produce a particular result or effect: These new measures do not add up to genuine reform..." : addCategory === 'idiom' ? "Example: a drop in the ocean A very small amount that will not have much effect..." : "Example: assess to judge or evaluate someone or something carefully..."}
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                 />
@@ -576,7 +607,7 @@ export default function App() {
       </nav>
 
       {/* Footer Decoration */}
-      <footer className="max-w-5xl mx-auto px-6 py-6 text-center pb-24 md:pb-8">
+      <footer className="max-w-5xl mx-auto px-6 py-2 text-center pb-20 md:pb-6">
         <p className="text-gray-300 text-[10px] uppercase tracking-[0.2em] font-bold">
           Knowledge is Power • Build your Vocabulary
         </p>

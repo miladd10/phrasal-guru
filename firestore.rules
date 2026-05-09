@@ -62,7 +62,7 @@ service cloud.firestore {
                data.example is string && data.example.size() <= 1000 &&
                data.phonetic is string && data.phonetic.size() <= 100 &&
                data.translation is string && data.translation.size() <= 200 &&
-               data.category in ['phrasal', 'idiom', 'unit2', 'unit4', 'unit6', 'unit8', 'unit10', 'unit12', 'unit14', 'unit16', 'unit18', 'unit20', 'unit22', 'unit24', 'unit26'] &&
+               data.category in ['phrasal', 'idiom', 'unit0', 'unit2', 'unit4', 'unit6', 'unit8', 'unit10', 'unit12', 'unit14', 'unit16', 'unit18', 'unit20', 'unit22', 'unit24', 'unit26'] &&
                data.userId == request.auth.uid &&
                (data.keys().hasAll(['createdAt']) ? data.createdAt == request.time : true);
       }

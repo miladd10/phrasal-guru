@@ -1,6 +1,6 @@
 {
-  "name": "Phrasal Guru",
-  "description": "An interactive flashcard app for mastering phrasal verbs with phonetics, examples, and Persian translations.",
+  "name": "Lexis",
+  "description": "A sophisticated vocabulary system for mastering phrasal verbs, idioms, and advanced units with AI-powered extraction and cloud synchronization.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }

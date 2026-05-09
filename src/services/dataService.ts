@@ -6,7 +6,7 @@ const getApiKey = () => {
 
 const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
-export type Category = 'phrasal' | 'idiom' | 'unit2' | 'unit4' | 'unit6' | 'unit8' | 'unit10' | 'unit12' | 'unit14' | 'unit16' | 'unit18' | 'unit20' | 'unit22' | 'unit24' | 'unit26';
+export type Category = 'phrasal' | 'idiom' | 'unit0' | 'unit2' | 'unit4' | 'unit6' | 'unit8' | 'unit10' | 'unit12' | 'unit14' | 'unit16' | 'unit18' | 'unit20' | 'unit22' | 'unit24' | 'unit26';
 
 export interface PhrasalVerb {
   id?: string;

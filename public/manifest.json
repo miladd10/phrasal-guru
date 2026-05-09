@@ -1,16 +1,10 @@
 {
-  "short_name": "Phrasal Guru",
-  "name": "Phrasal Guru",
-  "description": "Master English Phrasal Verbs & Idioms",
+  "short_name": "Lexis",
+  "name": "Lexis",
+  "description": "Sophisticated vocabulary system for mastering phrasal verbs, idioms, and advanced vocabulary.",
   "icons": [
     {
-      "src": "/icon-192.png",
-      "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-512.png",
+      "src": "/logo.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
