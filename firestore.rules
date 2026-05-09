@@ -6,6 +6,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Connection Test Path
+    match /test/connection {
+      allow get: if true;
+    }
+
     // --- Helpers ---
     function isSignedIn() {
       return request.auth != null;
@@ -36,8 +41,8 @@ service cloud.firestore {
     // User Profiles
     match /users/{userId} {
       function isValidUserProfile(data) {
-        return data.masteredVerbs is list &&
-               data.masteredVerbs.size() <= 2000 &&
+        return data.masteredWords is list &&
+               data.masteredWords.size() <= 2000 &&
                data.updatedAt == request.time;
       }
 
@@ -46,17 +51,18 @@ service cloud.firestore {
       allow create: if isOwner(userId) && isVerified() && isValidUserProfile(incoming());
       allow update: if isOwner(userId) && isVerified() && 
                     isValidUserProfile(incoming()) &&
-                    incoming().diff(existing()).affectedKeys().hasOnly(['masteredVerbs', 'updatedAt']);
+                    incoming().diff(existing()).affectedKeys().hasOnly(['masteredWords', 'updatedAt']);
     }
 
-    // Custom Verbs
-    match /users/{userId}/customVerbs/{verbId} {
+    // Custom Words
+    match /users/{userId}/customVerbs/{wordId} {
       function isValidCustomVerb(data) {
-        return data.verb is string && data.verb.size() <= 100 &&
+        return data.word is string && data.word.size() <= 100 &&
                data.definition is string && data.definition.size() <= 500 &&
                data.example is string && data.example.size() <= 1000 &&
                data.phonetic is string && data.phonetic.size() <= 100 &&
                data.translation is string && data.translation.size() <= 200 &&
+               data.category in ['phrasal', 'idiom', 'unit2', 'unit4', 'unit6', 'unit8', 'unit10', 'unit12', 'unit14', 'unit16', 'unit18', 'unit20', 'unit22', 'unit24', 'unit26'] &&
                data.userId == request.auth.uid &&
                (data.keys().hasAll(['createdAt']) ? data.createdAt == request.time : true);
       }

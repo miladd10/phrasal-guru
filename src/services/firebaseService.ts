@@ -74,11 +74,11 @@ export const loginWithGoogle = async () => {
 export const logout = () => signOut(auth);
 
 // Data Helpers
-export const syncMasteredVerbs = async (userId: string, masteredVerbs: string[]) => {
+export const syncMasteredWords = async (userId: string, masteredWords: string[]) => {
   const userDoc = doc(db, 'users', userId);
   try {
     await setDoc(userDoc, {
-      masteredVerbs,
+      masteredWords,
       updatedAt: serverTimestamp()
     }, { merge: true });
   } catch (error) {
@@ -86,10 +86,10 @@ export const syncMasteredVerbs = async (userId: string, masteredVerbs: string[])
   }
 };
 
-export const saveCustomVerb = async (userId: string, verb: PhrasalVerb) => {
+export const saveCustomWord = async (userId: string, word: PhrasalVerb) => {
   try {
     await addDoc(collection(db, 'users', userId, 'customVerbs'), {
-      ...verb,
+      ...word,
       userId,
       createdAt: serverTimestamp()
     });
@@ -98,11 +98,11 @@ export const saveCustomVerb = async (userId: string, verb: PhrasalVerb) => {
   }
 };
 
-export const deleteCustomVerb = async (userId: string, verbId: string) => {
+export const deleteCustomWord = async (userId: string, wordId: string) => {
   try {
-    await deleteDoc(doc(db, 'users', userId, 'customVerbs', verbId));
+    await deleteDoc(doc(db, 'users', userId, 'customVerbs', wordId));
   } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, `users/${userId}/customVerbs/${verbId}`);
+    handleFirestoreError(error, OperationType.DELETE, `users/${userId}/customVerbs/${wordId}`);
   }
 };
 

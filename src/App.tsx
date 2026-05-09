@@ -6,13 +6,14 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { PHRASAL_VERBS_DATA, PhrasalVerb, enrichPhrasalVerb, Category } from './services/dataService';
 import { IDIOMS_DATA } from './services/idioms';
+import { UNIT_WORDS_DATA } from './services/unit_words';
 import { 
   auth, 
   loginWithGoogle, 
   logout, 
   db, 
-  syncMasteredVerbs, 
-  saveCustomVerb,
+  syncMasteredWords, 
+  saveCustomWord,
   handleFirestoreError,
   OperationType 
 } from './services/firebaseService';
@@ -30,6 +31,7 @@ import {
   Sparkles,
   LogOut,
   ChevronRight,
+  ChevronDown,
   User as UserIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -45,12 +47,13 @@ const shuffle = <T,>(array: T[]): T[] => {
 };
 
 export default function App() {
-  const [activeCategory, setActiveCategory] = useState<Category>('phrasal');
+  const [activeCategory, setActiveCategory] = useState<Category | 'words'>('phrasal');
+  const [selectedUnit, setSelectedUnit] = useState<'unit2' | 'unit4' | 'unit6' | 'unit8' | 'unit10' | 'unit12' | 'unit14' | 'unit16' | 'unit18' | 'unit20' | 'unit22' | 'unit24' | 'unit26'>('unit2');
   const [user, setUser] = useState<User | null>(null);
   
   useEffect(() => {
     setCurrentIndex(0);
-  }, [activeCategory]);
+  }, [activeCategory, selectedUnit]);
   const [view, setView] = useState<'study' | 'library' | 'add'>('study');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,14 +61,14 @@ export default function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [inputText, setInputText] = useState('');
-  const [masteredVerbs, setMasteredVerbs] = useState<Set<string>>(new Set());
+  const [masteredWords, setMasteredWords] = useState<Set<string>>(new Set());
   const [showOnlyUnmastered, setShowOnlyUnmastered] = useState(true); // Default to true as requested
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Mastered List Sync
   useEffect(() => {
     if (!user) {
-      setMasteredVerbs(new Set());
+      setMasteredWords(new Set());
       setCustomVerbs([]);
       return;
     }
@@ -75,7 +78,7 @@ export default function App() {
     getDoc(userDoc)
       .then(snap => {
         if (snap.exists()) {
-          setMasteredVerbs(new Set(snap.data().masteredVerbs || []));
+          setMasteredWords(new Set(snap.data().masteredWords || []));
         }
       })
       .catch(error => handleFirestoreError(error, OperationType.GET, `users/${user.uid}`));
@@ -126,6 +129,7 @@ export default function App() {
     const combined = [
       ...PHRASAL_VERBS_DATA.map(v => ({...v, category: v.category || 'phrasal' as Category})), 
       ...IDIOMS_DATA,
+      ...UNIT_WORDS_DATA,
       ...customVerbs
     ];
     return shuffle(combined);
@@ -133,25 +137,29 @@ export default function App() {
 
   const studyVerbs = useMemo(() => {
     let filtered = allVerbs;
-    if (activeCategory) {
+    if (activeCategory === 'words') {
+      filtered = filtered.filter(v => v.category === selectedUnit);
+    } else if (activeCategory) {
       filtered = filtered.filter(v => v.category === activeCategory);
     }
     if (showOnlyUnmastered) {
-      filtered = filtered.filter(v => !masteredVerbs.has(v.verb));
+      filtered = filtered.filter(v => !masteredWords.has(v.word));
     }
     return filtered;
-  }, [allVerbs, masteredVerbs, showOnlyUnmastered, activeCategory]);
+  }, [allVerbs, masteredWords, showOnlyUnmastered, activeCategory, selectedUnit]);
 
   const filteredVerbs = useMemo(() => {
     let filtered = allVerbs;
-    if (activeCategory) {
+    if (activeCategory === 'words') {
+      filtered = filtered.filter(v => v.category === selectedUnit);
+    } else if (activeCategory) {
       filtered = filtered.filter(v => v.category === activeCategory);
     }
     return filtered.filter(v => 
-      v.verb.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      v.word.toLowerCase().includes(searchQuery.toLowerCase()) ||
       v.definition.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [allVerbs, searchQuery, activeCategory]);
+  }, [allVerbs, searchQuery, activeCategory, selectedUnit]);
 
   const handleNext = () => {
     if (studyVerbs.length === 0) return;
@@ -162,26 +170,27 @@ export default function App() {
     }
   };
 
-  const toggleMastered = useCallback(async (verb: string) => {
-    const nextMastered = new Set<string>(masteredVerbs);
-    if (nextMastered.has(verb)) nextMastered.delete(verb);
-    else nextMastered.add(verb);
+  const toggleMastered = useCallback(async (word: string) => {
+    const nextMastered = new Set<string>(masteredWords);
+    if (nextMastered.has(word)) nextMastered.delete(word);
+    else nextMastered.add(word);
     
-    setMasteredVerbs(nextMastered);
+    setMasteredWords(nextMastered);
     
     if (user) {
-      await syncMasteredVerbs(user.uid, Array.from(nextMastered));
+      await syncMasteredWords(user.uid, Array.from(nextMastered));
     }
-  }, [masteredVerbs, user]);
+  }, [masteredWords, user]);
 
   const handleAddVerbs = async () => {
     if (!inputText.trim()) return;
     setIsProcessing(true);
     try {
-      const newVerbs = await enrichPhrasalVerb(inputText, activeCategory);
+      const targetCat = activeCategory === 'words' ? selectedUnit : activeCategory;
+      const newVerbs = await enrichPhrasalVerb(inputText, targetCat as Category);
       if (user) {
         for (const v of newVerbs) {
-          await saveCustomVerb(user.uid, v);
+          await saveCustomWord(user.uid, v);
         }
       } else {
         setCustomVerbs(prev => [...prev, ...newVerbs]);
@@ -279,37 +288,62 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-24 sm:pb-12">
-        <div className="w-full max-w-lg mb-6 sm:mb-8 flex flex-col items-center gap-4 px-2 sm:px-4 mx-auto">
-             <div className="flex bg-gray-100 p-1 rounded-full shadow-inner">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-12 sm:pb-6">
+        <div className="w-full max-w-lg mb-2 sm:mb-4 flex flex-col items-center gap-4 px-2 sm:px-4 mx-auto">
+             <div className="flex bg-gray-100 p-1 rounded-full shadow-inner overflow-x-auto max-w-full">
                <button 
                  onClick={() => setActiveCategory('phrasal')}
-                 className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${
+                 className={`whitespace-nowrap px-4 sm:px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${
                    activeCategory === 'phrasal' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
                  }`}
                >
-                 Phrasal Verbs
+                 Phrasals
                </button>
                <button 
                  onClick={() => setActiveCategory('idiom')}
-                 className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${
+                 className={`whitespace-nowrap px-4 sm:px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${
                    activeCategory === 'idiom' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
                  }`}
                >
                  Idioms
                </button>
+               <button 
+                 onClick={() => setActiveCategory('words')}
+                 className={`whitespace-nowrap px-4 sm:px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${
+                   activeCategory === 'words' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                 }`}
+               >
+                 Words
+               </button>
              </div>
 
-             {view === 'study' && (
-                <button 
-                  onClick={() => setShowOnlyUnmastered(!showOnlyUnmastered)}
-                  className={`text-[9px] uppercase tracking-wider font-extrabold px-6 py-2 rounded-full border transition-all ${
-                    showOnlyUnmastered ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-white border-gray-200 text-gray-400'
-                  }`}
-                >
-                  {showOnlyUnmastered ? 'Target: New Items' : 'Target: All Items'}
-                </button>
+             {activeCategory === 'words' && (
+                <div className="relative">
+                  <select 
+                    value={selectedUnit}
+                    onChange={(e) => setSelectedUnit(e.target.value as any)}
+                    className="appearance-none bg-white border border-gray-200 text-gray-700 text-[10px] font-black uppercase tracking-widest px-8 py-2.5 rounded-full pr-10 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-sm transition-all hover:bg-gray-50"
+                  >
+                    <option value="unit2">Unit 2: Thinking & Learning</option>
+                    <option value="unit4">Unit 4: Change & Tech</option>
+                    <option value="unit6">Unit 6: Time & Work</option>
+                    <option value="unit8">Unit 8: Movement</option>
+                    <option value="unit10">Unit 10: Communication & Media</option>
+                    <option value="unit12">Unit 12: Chance & Nature</option>
+                    <option value="unit14">Unit 14: Quantity & Money</option>
+                    <option value="unit16">Unit 16: Materials & Places</option>
+                    <option value="unit18">Unit 18: Behavior & Health</option>
+                    <option value="unit20">Unit 20: Power & Social Issues</option>
+                    <option value="unit22">Unit 22: Quality & The Arts</option>
+                    <option value="unit24">Unit 24: Connections & People</option>
+                    <option value="unit26">Unit 26: Preference & Leisure</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-indigo-500">
+                    <ChevronDown size={14} strokeWidth={3} />
+                  </div>
+                </div>
              )}
+
         </div>
 
         <AnimatePresence mode="wait">
@@ -329,12 +363,12 @@ export default function App() {
                     onNext={handleNext}
                     index={currentIndex}
                     total={studyVerbs.length}
-                    isMastered={masteredVerbs.has(studyVerbs[currentIndex]?.verb)}
+                    isMastered={masteredWords.has(studyVerbs[currentIndex]?.word)}
                     onToggleMastered={toggleMastered}
                   />
 
                   {/* Navigation Controls - Flow Layout */}
-                  <div className="flex items-center justify-center gap-4 px-4 pb-8">
+                  <div className="flex items-center justify-center gap-4 px-4 pb-4">
                     <button
                       onClick={() => {
                         if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
@@ -352,6 +386,17 @@ export default function App() {
                       title="Next Word"
                     >
                       <ArrowRight size={28} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+
+                  <div className="flex justify-center pb-8">
+                    <button 
+                      onClick={() => setShowOnlyUnmastered(!showOnlyUnmastered)}
+                      className={`text-[9px] uppercase tracking-wider font-extrabold px-6 py-2 rounded-full border transition-all ${
+                        showOnlyUnmastered ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-white border-gray-200 text-gray-400'
+                      }`}
+                    >
+                      {showOnlyUnmastered ? 'Target: New Items' : 'Target: All Items'}
                     </button>
                   </div>
                 </div>
@@ -396,12 +441,12 @@ export default function App() {
                 {filteredVerbs.map((v, i) => (
                   <motion.div
                     layout
-                    key={v.verb + i}
+                    key={v.word + i}
                     className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow group"
                   >
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                        {v.verb}
+                        {v.word}
                       </h3>
                       <div className="flex items-center gap-2">
                         <span className="text-[9px] uppercase font-black px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-500">
@@ -449,14 +494,14 @@ export default function App() {
             >
               <div className="text-center">
                 <Sparkles className="mx-auto text-indigo-500 mb-4" size={40} />
-                <h2 className="text-2xl font-bold text-gray-900">Add New {activeCategory === 'phrasal' ? 'Phrasal Verb' : 'Idiom'}</h2>
-                <p className="text-gray-500 mt-2">Paste raw text from a book or list. Our AI will automatically extract {activeCategory === 'phrasal' ? 'verbs' : 'idioms'}, definitions, phonetics, and translations.</p>
+                <h2 className="text-2xl font-bold text-gray-900">Add New {activeCategory === 'phrasal' ? 'Phrasal Verb' : activeCategory === 'idiom' ? 'Idiom' : 'Vocabulary Item'}</h2>
+                <p className="text-gray-500 mt-2">Paste raw text from a book or list. Our AI will automatically extract {activeCategory === 'phrasal' ? 'verbs' : activeCategory === 'idiom' ? 'idioms' : 'words'}, definitions, phonetics, and translations.</p>
               </div>
 
               <div className="space-y-4">
                 <textarea
                   className="w-full h-64 bg-white border border-gray-200 rounded-3xl p-6 outline-none focus:border-indigo-500 transition-colors shadow-sm resize-none"
-                  placeholder={activeCategory === 'phrasal' ? "Example: add up to combine to produce a particular result or effect: These new measures do not add up to genuine reform..." : "Example: a drop in the ocean A very small amount that will not have much effect..."}
+                  placeholder={activeCategory === 'phrasal' ? "Example: add up to combine to produce a particular result or effect: These new measures do not add up to genuine reform..." : activeCategory === 'idiom' ? "Example: a drop in the ocean A very small amount that will not have much effect..." : "Example: assess to judge or evaluate someone or something carefully..."}
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                 />
@@ -531,7 +576,7 @@ export default function App() {
       </nav>
 
       {/* Footer Decoration */}
-      <footer className="max-w-5xl mx-auto px-6 py-12 text-center pb-32 md:pb-12">
+      <footer className="max-w-5xl mx-auto px-6 py-6 text-center pb-24 md:pb-8">
         <p className="text-gray-300 text-[10px] uppercase tracking-[0.2em] font-bold">
           Knowledge is Power • Build your Vocabulary
         </p>

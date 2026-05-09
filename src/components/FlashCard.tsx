@@ -45,7 +45,7 @@ interface FlashCardProps {
   index: number;
   total: number;
   isMastered: boolean;
-  onToggleMastered: (verb: string) => void;
+  onToggleMastered: (word: string) => void;
 }
 
 export default function FlashCard({ verb, onNext, index, total, isMastered, onToggleMastered }: FlashCardProps) {
@@ -69,12 +69,12 @@ export default function FlashCard({ verb, onNext, index, total, isMastered, onTo
     
     setIsSpeaking(true);
     try {
-      const audioData = await getSpeech(verb.verb);
+      const audioData = await getSpeech(verb.word);
       if (audioData) {
         await playPCM(audioData);
       } else {
         // Fallback to basic tts if AI fails or quota exceeded
-        const utterance = new SpeechSynthesisUtterance(verb.verb);
+        const utterance = new SpeechSynthesisUtterance(verb.word);
         utterance.lang = 'en-US';
         utterance.rate = 0.9;
         window.speechSynthesis.speak(utterance);
@@ -99,7 +99,7 @@ export default function FlashCard({ verb, onNext, index, total, isMastered, onTo
           <button 
             onClick={(e) => {
               e.stopPropagation();
-              onToggleMastered(verb.verb);
+              onToggleMastered(verb.word);
             }}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-black transition-all border ${
               isMastered 
@@ -132,10 +132,10 @@ export default function FlashCard({ verb, onNext, index, total, isMastered, onTo
               
               <div className="relative z-10 w-full">
                 <motion.h2 
-                  layoutId={verb.verb}
+                  layoutId={verb.word}
                   className="text-3xl sm:text-7xl font-black text-gray-900 mb-6 sm:mb-8 tracking-tighter leading-none break-words px-4"
                 >
-                  {verb.verb}
+                  {verb.word}
                 </motion.h2>
                 <div 
                   onClick={handleSpeak}
