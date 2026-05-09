@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PhrasalVerb, getSpeech } from '../services/dataService';
 import { Languages, Volume2, Info, ChevronRight, RotateCcw, ChevronDown, Loader2 } from 'lucide-react';
@@ -52,6 +52,11 @@ export default function FlashCard({ verb, onNext, index, total, isMastered, onTo
   const [isFlipped, setIsFlipped] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+
+  useEffect(() => {
+    setIsFlipped(false);
+    setShowTranslation(false);
+  }, [verb]);
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);

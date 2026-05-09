@@ -4,7 +4,8 @@
  */
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { PHRASAL_VERBS_DATA, PhrasalVerb, enrichPhrasalVerb } from './services/dataService';
+import { PHRASAL_VERBS_DATA, PhrasalVerb, enrichPhrasalVerb, Category } from './services/dataService';
+import { IDIOMS_DATA } from './services/idioms';
 import { 
   auth, 
   loginWithGoogle, 
@@ -44,7 +45,12 @@ const shuffle = <T,>(array: T[]): T[] => {
 };
 
 export default function App() {
+  const [activeCategory, setActiveCategory] = useState<Category>('phrasal');
   const [user, setUser] = useState<User | null>(null);
+  
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [activeCategory]);
   const [view, setView] = useState<'study' | 'library' | 'add'>('study');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,23 +123,35 @@ export default function App() {
   };
 
   const allVerbs = useMemo(() => {
-    const combined = [...PHRASAL_VERBS_DATA, ...customVerbs];
+    const combined = [
+      ...PHRASAL_VERBS_DATA.map(v => ({...v, category: v.category || 'phrasal' as Category})), 
+      ...IDIOMS_DATA,
+      ...customVerbs
+    ];
     return shuffle(combined);
-  }, [customVerbs, isInitialLoad]); // Reshuffle when app loads or data changes
+  }, [customVerbs, isInitialLoad]); 
 
   const studyVerbs = useMemo(() => {
-    if (showOnlyUnmastered) {
-      return allVerbs.filter(v => !masteredVerbs.has(v.verb));
+    let filtered = allVerbs;
+    if (activeCategory) {
+      filtered = filtered.filter(v => v.category === activeCategory);
     }
-    return allVerbs;
-  }, [allVerbs, masteredVerbs, showOnlyUnmastered]);
+    if (showOnlyUnmastered) {
+      filtered = filtered.filter(v => !masteredVerbs.has(v.verb));
+    }
+    return filtered;
+  }, [allVerbs, masteredVerbs, showOnlyUnmastered, activeCategory]);
 
   const filteredVerbs = useMemo(() => {
-    return allVerbs.filter(v => 
+    let filtered = allVerbs;
+    if (activeCategory) {
+      filtered = filtered.filter(v => v.category === activeCategory);
+    }
+    return filtered.filter(v => 
       v.verb.toLowerCase().includes(searchQuery.toLowerCase()) ||
       v.definition.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [allVerbs, searchQuery]);
+  }, [allVerbs, searchQuery, activeCategory]);
 
   const handleNext = () => {
     if (studyVerbs.length === 0) return;
@@ -160,7 +178,7 @@ export default function App() {
     if (!inputText.trim()) return;
     setIsProcessing(true);
     try {
-      const newVerbs = await enrichPhrasalVerb(inputText);
+      const newVerbs = await enrichPhrasalVerb(inputText, activeCategory);
       if (user) {
         for (const v of newVerbs) {
           await saveCustomVerb(user.uid, v);
@@ -261,26 +279,48 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-12 pb-24 sm:pb-12">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-24 sm:pb-12">
+        <div className="w-full max-w-lg mb-6 sm:mb-8 flex flex-col items-center gap-4 px-2 sm:px-4 mx-auto">
+             <div className="flex bg-gray-100 p-1 rounded-full shadow-inner">
+               <button 
+                 onClick={() => setActiveCategory('phrasal')}
+                 className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${
+                   activeCategory === 'phrasal' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                 }`}
+               >
+                 Phrasal Verbs
+               </button>
+               <button 
+                 onClick={() => setActiveCategory('idiom')}
+                 className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${
+                   activeCategory === 'idiom' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                 }`}
+               >
+                 Idioms
+               </button>
+             </div>
+
+             {view === 'study' && (
+                <button 
+                  onClick={() => setShowOnlyUnmastered(!showOnlyUnmastered)}
+                  className={`text-[9px] uppercase tracking-wider font-extrabold px-6 py-2 rounded-full border transition-all ${
+                    showOnlyUnmastered ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-white border-gray-200 text-gray-400'
+                  }`}
+                >
+                  {showOnlyUnmastered ? 'Target: New Items' : 'Target: All Items'}
+                </button>
+             )}
+        </div>
+
         <AnimatePresence mode="wait">
           {view === 'study' && (
             <motion.div
               key="study"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              exit={{ opacity: 0, y: -10 }}
               className="flex flex-col items-center"
             >
-              <div className="w-full max-w-lg mb-6 sm:mb-8 flex justify-center px-2 sm:px-4">
-                 <button 
-                  onClick={() => setShowOnlyUnmastered(!showOnlyUnmastered)}
-                  className={`text-[9px] sm:text-[10px] uppercase tracking-wider font-black px-4 sm:px-5 py-2.5 sm:py-2 rounded-full border transition-all ${
-                    showOnlyUnmastered ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-white border-gray-200 text-gray-400'
-                  }`}
-                 >
-                   {showOnlyUnmastered ? 'Mode: Target New' : 'Mode: Master Review'}
-                 </button>
-              </div>
 
               {studyVerbs.length > 0 ? (
                 <div className="w-full max-w-2xl mx-auto space-y-8">
@@ -363,9 +403,14 @@ export default function App() {
                       <h3 className="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
                         {v.verb}
                       </h3>
-                      <span className="text-xs font-mono text-gray-400 bg-gray-50 px-2 py-1 rounded">
-                        {v.phonetic}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] uppercase font-black px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-500">
+                          {v.category}
+                        </span>
+                        <span className="text-xs font-mono text-gray-400 bg-gray-50 px-2 py-1 rounded">
+                          {v.phonetic}
+                        </span>
+                      </div>
                     </div>
                     <p className="text-sm text-gray-600 mb-2">{v.definition}</p>
                     <p className="text-xs text-gray-400 italic mb-4">"{v.example}"</p>
@@ -404,14 +449,14 @@ export default function App() {
             >
               <div className="text-center">
                 <Sparkles className="mx-auto text-indigo-500 mb-4" size={40} />
-                <h2 className="text-2xl font-bold text-gray-900">Add New Vocabulary</h2>
-                <p className="text-gray-500 mt-2">Paste raw text from a book or list. Our AI will automatically extract verbs, definitions, phonetics, and translations.</p>
+                <h2 className="text-2xl font-bold text-gray-900">Add New {activeCategory === 'phrasal' ? 'Phrasal Verb' : 'Idiom'}</h2>
+                <p className="text-gray-500 mt-2">Paste raw text from a book or list. Our AI will automatically extract {activeCategory === 'phrasal' ? 'verbs' : 'idioms'}, definitions, phonetics, and translations.</p>
               </div>
 
               <div className="space-y-4">
                 <textarea
                   className="w-full h-64 bg-white border border-gray-200 rounded-3xl p-6 outline-none focus:border-indigo-500 transition-colors shadow-sm resize-none"
-                  placeholder="Example: add up to combine to produce a particular result or effect: These new measures do not add up to genuine reform..."
+                  placeholder={activeCategory === 'phrasal' ? "Example: add up to combine to produce a particular result or effect: These new measures do not add up to genuine reform..." : "Example: a drop in the ocean A very small amount that will not have much effect..."}
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                 />
