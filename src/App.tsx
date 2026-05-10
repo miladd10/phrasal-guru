@@ -7,6 +7,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { PHRASAL_VERBS_DATA, PhrasalVerb, enrichPhrasalVerb, Category } from './services/dataService';
 import { IDIOMS_DATA } from './services/idioms';
 import { UNIT_WORDS_DATA } from './services/unit_words';
+import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { 
   auth, 
   loginWithGoogle, 
@@ -15,11 +16,16 @@ import {
   syncMasteredWords, 
   saveCustomWord,
   handleFirestoreError,
-  OperationType 
+  OperationType,
+  upsertMemoCard,
+  getMemoCards,
+  removeMemoCard,
+  googleProvider
 } from './services/firebaseService';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc, collection, onSnapshot, query } from 'firebase/firestore';
+import { doc, getDoc, collection, onSnapshot, query, setDoc, serverTimestamp } from 'firebase/firestore';
 import FlashCard from './components/FlashCard';
+import { createMemoCard, reviewMemoCard, getIntervalString, MemoCard, getNextIntervals } from './services/fsrsService';
+import { Rating, State } from 'ts-fsrs';
 import { 
   BookOpen, 
   Library, 
@@ -32,9 +38,16 @@ import {
   LogOut,
   ChevronRight,
   ChevronDown,
-  User as UserIcon
+  User as UserIcon,
+  BrainCircuit,
+  History,
+  Calendar,
+  Layers,
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { isAfter, startOfDay } from 'date-fns';
 
 // Shuffle helper
 const shuffle = <T,>(array: T[]): T[] => {
@@ -46,25 +59,33 @@ const shuffle = <T,>(array: T[]): T[] => {
   return newArr;
 };
 
+const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
+const authMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mode') === 'auth';
+
 export default function App() {
   const [activeCategory, setActiveCategory] = useState<Category | 'words'>('phrasal');
   const [selectedUnit, setSelectedUnit] = useState<'unit0' | 'unit2' | 'unit4' | 'unit6' | 'unit8' | 'unit10' | 'unit12' | 'unit14' | 'unit16' | 'unit18' | 'unit20' | 'unit22' | 'unit24' | 'unit26'>('unit2');
   const [addCategory, setAddCategory] = useState<'phrasal' | 'idiom' | 'unit0'>('phrasal');
   const [user, setUser] = useState<User | null>(null);
+  const [memoCards, setMemoCards] = useState<Map<string, MemoCard>>(new Map());
+  const [isSyncingMemo, setIsSyncingMemo] = useState(false);
   
   useEffect(() => {
     setCurrentIndex(0);
   }, [activeCategory, selectedUnit]);
-  const [view, setView] = useState<'study' | 'library' | 'add'>('study');
+  const [view, setView] = useState<'study' | 'library' | 'add' | 'memoflow'>('study');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [customVerbs, setCustomVerbs] = useState<PhrasalVerb[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [popupBlocked, setPopupBlocked] = useState(false);
   const [inputText, setInputText] = useState('');
   const [masteredWords, setMasteredWords] = useState<Set<string>>(new Set());
   const [showOnlyUnmastered, setShowOnlyUnmastered] = useState(true); // Default to true as requested
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [deckToAdd, setDeckToAdd] = useState<string>('Default');
+  const [showDeckSelector, setShowDeckSelector] = useState<{word: PhrasalVerb} | null>(null);
 
   // Mastered List Sync
   useEffect(() => {
@@ -102,6 +123,30 @@ export default function App() {
     return () => unsubVerbs();
   }, [user]);
 
+  // Sync Memo Cards
+  useEffect(() => {
+    if (!user) {
+      setMemoCards(new Map());
+      return;
+    }
+
+    const loadMemoCards = async () => {
+      setIsSyncingMemo(true);
+      try {
+        const cards = await getMemoCards(user.uid);
+        const cardMap = new Map<string, MemoCard>();
+        cards.forEach(c => cardMap.set(c.wordId, c));
+        setMemoCards(cardMap);
+      } catch (error) {
+        console.error("Failed to load memo cards:", error);
+      } finally {
+        setIsSyncingMemo(false);
+      }
+    };
+
+    loadMemoCards();
+  }, [user]);
+
   // Auth Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -112,18 +157,62 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Handle auth popup mode - auto-trigger login and close
+  useEffect(() => {
+    if (!authMode) return;
+    
+    const triggerLogin = async () => {
+      try {
+        await signInWithPopup(auth, googleProvider);
+        if (window.opener) {
+          window.opener.postMessage({ type: 'FIREBASE_AUTH_SUCCESS' }, window.location.origin);
+        }
+        window.close();
+      } catch (error) {
+        console.error("Popup auth error:", error);
+        window.close();
+      }
+    };
+
+    triggerLogin();
+  }, []);
+
   const handleLogin = async () => {
     setIsLoggingIn(true);
-    try {
-      const result = await loginWithGoogle();
-      if (result) {
-        setUser(result.user);
-      }
-    } catch (error) {
-      console.error("Login failed:", error);
-    } finally {
+    setPopupBlocked(false);
+
+    // Open popup synchronously from click handler (prevents browser blocking)
+    const authWindow = window.open(
+      `${window.location.origin}?mode=auth`,
+      'firebaseAuth',
+      'width=500,height=600,toolbar=no,scrollbars=yes,resizable=yes'
+    );
+
+    if (!authWindow) {
+      // Popup was blocked
       setIsLoggingIn(false);
+      setPopupBlocked(true);
+      return;
     }
+
+    // Listen for success message from the popup
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type === 'FIREBASE_AUTH_SUCCESS') {
+        window.removeEventListener('message', handleMessage);
+        setIsLoggingIn(false);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
+    // Cleanup if popup is closed without logging in
+    const pollClosed = setInterval(() => {
+      if (authWindow.closed) {
+        clearInterval(pollClosed);
+        window.removeEventListener('message', handleMessage);
+        setIsLoggingIn(false);
+      }
+    }, 500);
   };
 
   const allVerbs = useMemo(() => {
@@ -146,8 +235,11 @@ export default function App() {
     if (showOnlyUnmastered) {
       filtered = filtered.filter(v => !masteredWords.has(v.word));
     }
+    // Exclude words that are in MemoFlow
+    filtered = filtered.filter(v => !memoCards.has(v.word));
+    
     return filtered;
-  }, [allVerbs, masteredWords, showOnlyUnmastered, activeCategory, selectedUnit]);
+  }, [allVerbs, masteredWords, showOnlyUnmastered, activeCategory, selectedUnit, memoCards]);
 
   const filteredVerbs = useMemo(() => {
     let filtered = allVerbs;
@@ -183,6 +275,21 @@ export default function App() {
     }
   }, [masteredWords, user]);
 
+  const handleAddToMemoFlow = async (verb: PhrasalVerb, deckName: string = 'Default') => {
+    if (!user) {
+      alert("Please login to use MemoFlow (Spaced Repetition).");
+      return;
+    }
+
+    const newCard = createMemoCard(verb.word, verb.category, deckName);
+    const nextMemoCards = new Map(memoCards);
+    nextMemoCards.set(verb.word, newCard);
+    setMemoCards(nextMemoCards);
+
+    await upsertMemoCard(user.uid, newCard);
+    setShowDeckSelector(null);
+  };
+
   const handleAddVerbs = async () => {
     if (!inputText.trim()) return;
     setIsProcessing(true);
@@ -204,6 +311,21 @@ export default function App() {
       setIsProcessing(false);
     }
   };
+
+  if (authMode) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white font-sans">
+        <div className="flex flex-col items-center gap-4 p-8 text-center">
+          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-100 animate-pulse">
+            <BookOpen size={32} className="text-white" />
+          </div>
+          <Loader2 size={32} className="animate-spin text-indigo-600 mt-4" />
+          <p className="text-sm font-bold text-gray-900 mt-2">Signing in with Google...</p>
+          <p className="text-xs text-gray-500">This window will close automatically after login.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isInitialLoad) {
     return (
@@ -252,6 +374,15 @@ export default function App() {
             >
               Library
             </button>
+            <button
+              onClick={() => setView('memoflow')}
+              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
+                view === 'memoflow' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              <BrainCircuit size={16} />
+              MemoFlow
+            </button>
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -265,18 +396,36 @@ export default function App() {
                 <span className="hidden sm:inline text-xs font-bold">Logout</span>
               </button>
             ) : (
-              <button 
-                onClick={handleLogin}
-                disabled={isLoggingIn}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white border border-gray-200 rounded-xl text-[10px] sm:text-xs font-bold hover:border-indigo-500 transition-all shadow-sm disabled:opacity-50"
-              >
-                {isLoggingIn ? (
-                  <Loader2 size={14} className="animate-spin text-indigo-600" />
-                ) : (
-                  <UserIcon size={14} className="text-indigo-600" />
+              <div className="flex flex-col items-end gap-1">
+                <button 
+                  onClick={handleLogin}
+                  disabled={isLoggingIn}
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all shadow-md disabled:opacity-50 ${
+                    popupBlocked ? 'bg-orange-500 hover:bg-orange-600' : 'bg-indigo-600 hover:bg-indigo-700'
+                  } text-white`}
+                >
+                  {isLoggingIn ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <UserIcon size={14} />
+                  )}
+                  {popupBlocked ? 'Retry Login' : (isLoggingIn ? 'Connecting...' : 'Login with Google')}
+                </button>
+                {popupBlocked && (
+                  <div className="flex flex-col items-end gap-1 mt-1 bg-orange-50 p-2 rounded-lg border border-orange-200">
+                    <p className="text-[9px] text-orange-700 font-bold flex items-center gap-1">
+                      <AlertCircle size={10} /> Popup Blocked
+                    </p>
+                    <button 
+                      onClick={() => window.open(window.location.href, '_blank')}
+                      className="flex items-center gap-1 text-[9px] bg-white border border-orange-300 px-2 py-1 rounded text-orange-700 hover:bg-orange-100 font-bold shadow-sm"
+                    >
+                      <ExternalLink size={10} />
+                      Open in New Tab
+                    </button>
+                  </div>
                 )}
-                {isLoggingIn ? 'Connecting...' : 'Login'}
-              </button>
+              </div>
             )}
             
             <button
@@ -292,6 +441,78 @@ export default function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-4 sm:pb-2">
+        {showDeckSelector && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-indigo-50"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                 <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+                    <Layers size={20} />
+                 </div>
+                 <div>
+                    <h3 className="text-lg font-black text-gray-900">Add to Deck</h3>
+                    <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Choose or create a deck</p>
+                 </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                   <p className="text-[10px] font-black uppercase text-gray-400 ml-1">Existing Decks</p>
+                   <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                      {(Array.from(memoCards.values()) as MemoCard[]).reduce((acc: string[], c) => {
+                        const d = c.deck || 'Default';
+                        if (!acc.includes(d)) acc.push(d);
+                        return acc;
+                      }, []).map(deck => (
+                        <button
+                          key={deck}
+                          onClick={() => handleAddToMemoFlow(showDeckSelector.word, deck)}
+                          className="px-3 py-1.5 bg-gray-50 hover:bg-indigo-50 text-gray-600 hover:text-indigo-600 rounded-lg text-xs font-bold transition-all border border-gray-100 hover:border-indigo-200"
+                        >
+                          {deck}
+                        </button>
+                      ))}
+                   </div>
+                </div>
+
+                <div className="space-y-2 pt-2">
+                   <p className="text-[10px] font-black uppercase text-gray-400 ml-1">Create New Deck</p>
+                   <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Deck name..."
+                        className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-sm outline-none focus:border-indigo-300 transition-all font-bold"
+                        value={deckToAdd}
+                        onChange={(e) => setDeckToAdd(e.target.value)}
+                      />
+                      <button
+                        onClick={() => {
+                          if (deckToAdd.trim()) {
+                            handleAddToMemoFlow(showDeckSelector.word, deckToAdd.trim());
+                            setDeckToAdd('Default');
+                          }
+                        }}
+                        className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg shadow-indigo-100"
+                      >
+                        Add
+                      </button>
+                   </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowDeckSelector(null)}
+                className="w-full mt-6 py-3 text-gray-400 hover:text-gray-600 font-bold text-xs uppercase tracking-widest transition-all"
+              >
+                Cancel
+              </button>
+            </motion.div>
+          </div>
+        )}
+
         <div className="w-full max-w-lg mb-2 sm:mb-4 flex flex-col items-center gap-4 px-2 sm:px-4 mx-auto">
              <div className="flex bg-gray-100 p-1 rounded-full shadow-inner overflow-x-auto max-w-full">
                <button 
@@ -369,6 +590,7 @@ export default function App() {
                     total={studyVerbs.length}
                     isMastered={masteredWords.has(studyVerbs[currentIndex]?.word)}
                     onToggleMastered={toggleMastered}
+                    onAddToMemoFlow={(v) => setShowDeckSelector({ word: v })}
                   />
 
                   {/* Navigation Controls - Flow Layout */}
@@ -488,6 +710,29 @@ export default function App() {
             </motion.div>
           )}
 
+          {view === 'memoflow' && (
+            <motion.div
+              key="memoflow"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="w-full max-w-4xl mx-auto"
+            >
+              <MemoFlowContent 
+                allVerbs={allVerbs}
+                memoCards={memoCards}
+                user={user}
+                onSetView={setView}
+                onUpdateCard={async (updatedCard) => {
+                  const nextCards = new Map(memoCards);
+                  nextCards.set(updatedCard.wordId, updatedCard);
+                  setMemoCards(nextCards);
+                  if (user) await upsertMemoCard(user.uid, updatedCard);
+                }}
+              />
+            </motion.div>
+          )}
+
           {view === 'add' && (
             <motion.div
               key="add"
@@ -603,6 +848,18 @@ export default function App() {
             </div>
             <span className="text-[10px] font-bold uppercase tracking-tighter">Library</span>
           </button>
+
+          <button
+            onClick={() => setView('memoflow')}
+            className={`flex flex-col items-center gap-1 p-2 transition-all ${
+              view === 'memoflow' ? 'text-indigo-600' : 'text-gray-400'
+            }`}
+          >
+            <div className={`p-1 rounded-lg ${view === 'memoflow' ? 'bg-indigo-50' : ''}`}>
+              <BrainCircuit size={22} />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-tighter">Memo</span>
+          </button>
         </div>
       </nav>
 
@@ -612,6 +869,240 @@ export default function App() {
           Knowledge is Power • Build your Vocabulary
         </p>
       </footer>
+    </div>
+  );
+}
+
+// --- MemoFlow Sub-components ---
+
+interface MemoFlowContentProps {
+  allVerbs: PhrasalVerb[];
+  memoCards: Map<string, MemoCard>;
+  user: User | null;
+  onSetView: (view: 'study' | 'library' | 'add' | 'memoflow') => void;
+  onUpdateCard: (card: MemoCard) => Promise<void>;
+}
+
+function MemoFlowContent({ allVerbs, memoCards, user, onSetView, onUpdateCard }: MemoFlowContentProps) {
+  const [sessionDeck, setSessionDeck] = useState<string | null>(null);
+  const [currentIdx, setCurrentIdx] = useState(0);
+
+  // Group cards into decks (categories)
+  const decks = useMemo(() => {
+    const d: Record<string, { all: number; due: number; new: number; cards: MemoCard[] }> = {};
+    const now = new Date();
+
+    memoCards.forEach(card => {
+      const deckName = card.deck || 'Default';
+      if (!d[deckName]) d[deckName] = { all: 0, due: 0, new: 0, cards: [] };
+      
+      d[deckName].all++;
+      d[deckName].cards.push(card);
+      if (card.reps === 0) d[deckName].new++;
+      else if (isAfter(now, (card.due as Date))) d[deckName].due++;
+    });
+
+    return d;
+  }, [memoCards]);
+
+  const activeDeckCards = useMemo(() => {
+    if (!sessionDeck || !decks[sessionDeck]) return [];
+    // Sort cards: Due first, then New
+    const now = new Date();
+    return decks[sessionDeck].cards
+      .filter(c => isAfter(now, (c.due as Date)) || c.reps === 0)
+      .sort((a,b) => (a.due as Date).getTime() - (b.due as Date).getTime());
+  }, [sessionDeck, decks]);
+
+  if (!user) {
+    return (
+      <div className="text-center py-20">
+        <BrainCircuit size={48} className="mx-auto text-gray-200 mb-6" />
+        <h3 className="text-xl font-bold text-gray-900">Login Required</h3>
+        <p className="text-gray-500 mt-2">Sign in to track your progress with Spaced Repetition.</p>
+      </div>
+    );
+  }
+
+  if (sessionDeck && activeDeckCards.length > 0) {
+    const currentCard = activeDeckCards[currentIdx];
+    const verb = allVerbs.find(v => v.word === currentCard.wordId);
+
+    if (!verb) return null;
+
+    const handleReview = async (rating: Rating) => {
+      const { card: updatedCard } = reviewMemoCard(currentCard, rating);
+      await onUpdateCard(updatedCard);
+      
+      if (currentIdx < activeDeckCards.length - 1) {
+        setCurrentIdx(currentIdx + 1);
+      } else {
+        setSessionDeck(null);
+        setCurrentIdx(0);
+      }
+    };
+
+    const nextIntervals = getNextIntervals(currentCard);
+
+    return (
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex items-center justify-between px-4">
+          <button 
+            onClick={() => setSessionDeck(null)}
+            className="flex items-center gap-2 text-indigo-600 font-bold text-sm hover:translate-x-1 transition-transform"
+          >
+            <ArrowLeft size={18} />
+            Back to Decks
+          </button>
+          <div className="text-right">
+            <span className="text-[10px] uppercase font-black text-gray-400 tracking-widest">
+              Reviewing: {sessionDeck}
+            </span>
+            <p className="text-sm font-bold text-indigo-600">
+              {currentIdx + 1} / {activeDeckCards.length}
+            </p>
+          </div>
+        </div>
+
+        <FlashCard 
+          verb={verb}
+          index={currentIdx}
+          total={activeDeckCards.length}
+          onNext={() => {}} // Not used here as we have review buttons
+          isMastered={false}
+          onToggleMastered={() => {}}
+          isInMemoFlow={true}
+        />
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 px-4 max-w-2xl mx-auto">
+          {[
+            { label: 'Again', color: 'bg-red-50 text-red-600 border-red-100', rating: Rating.Again },
+            { label: 'Hard', color: 'bg-orange-50 text-orange-600 border-orange-100', rating: Rating.Hard },
+            { label: 'Good', color: 'bg-green-50 text-green-600 border-green-100', rating: Rating.Good },
+            { label: 'Easy', color: 'bg-blue-50 text-blue-600 border-blue-100', rating: Rating.Easy },
+          ].map((btn) => (
+            <button
+              key={btn.label}
+              onClick={() => handleReview(btn.rating)}
+              className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all active:scale-95 hover:shadow-md ${btn.color}`}
+            >
+              <span className="text-sm font-black uppercase tracking-wider">{btn.label}</span>
+              <span className="text-[10px] font-medium opacity-60 mt-1">
+                {getIntervalString(nextIntervals[btn.rating])}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <div className="bg-indigo-600 rounded-[2.5rem] p-8 sm:p-12 text-white relative overflow-hidden shadow-2xl shadow-indigo-200">
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-4">
+             <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl">
+                <BrainCircuit size={24} />
+             </div>
+             <span className="text-[10px] uppercase font-black tracking-[0.3em] opacity-70">Learning Engine</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black tracking-tight mb-4">Your Memory Flow</h2>
+          <p className="text-indigo-100 text-sm sm:text-lg max-w-xl font-medium leading-relaxed">
+            Words in MemoFlow use a spaced-repetition algorithm to ensure you never forget what you've learned. Review your decks daily.
+          </p>
+        </div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-400/20 rounded-full -ml-32 -mb-32 blur-3xl animate-pulse" />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Object.entries(decks).length > 0 ? (
+          (Object.entries(decks) as [string, { all: number; due: number; new: number; cards: MemoCard[] }][]).map(([cat, stats]) => (
+            <button
+              key={cat}
+              onClick={() => {
+                if (stats.due + stats.new > 0) {
+                  setSessionDeck(cat);
+                  setCurrentIdx(0);
+                }
+              }}
+              className="p-8 bg-white border border-gray-100 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all text-left flex flex-col group relative overflow-hidden"
+            >
+              <div className="flex justify-between items-start mb-6">
+                <div className="p-3 bg-gray-50 text-indigo-600 rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
+                  <Layers size={24} />
+                </div>
+                <div className="flex flex-col items-end">
+                   <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">{cat}</span>
+                   <div className="flex gap-1 mt-2">
+                      <div className={`w-2 h-2 rounded-full ${stats.due > 0 ? 'bg-orange-500 animate-pulse' : 'bg-gray-200'}`} />
+                      <div className={`w-2 h-2 rounded-full ${stats.new > 0 ? 'bg-indigo-500' : 'bg-gray-200'}`} />
+                   </div>
+                </div>
+              </div>
+              
+              <h3 className="text-2xl font-black text-gray-900 mb-6 capitalize">{cat}s</h3>
+              
+              <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-50">
+                <div>
+                  <p className="text-lg font-black text-indigo-600">{stats.due}</p>
+                  <p className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">Due</p>
+                </div>
+                <div>
+                  <p className="text-lg font-black text-indigo-600">{stats.new}</p>
+                  <p className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">New</p>
+                </div>
+                <div>
+                  <p className="text-lg font-black text-gray-300">{stats.all}</p>
+                  <p className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">Total</p>
+                </div>
+              </div>
+
+              {stats.due + stats.new === 0 && (
+                <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="px-4 py-2 bg-white shadow-xl rounded-full text-xs font-bold text-indigo-600 border border-indigo-50">
+                    Done for today!
+                  </span>
+                </div>
+              )}
+            </button>
+          ))
+        ) : (
+          <div className="col-span-full py-20 text-center bg-gray-50 rounded-[3rem] border-2 border-dashed border-gray-200">
+            <History size={48} className="mx-auto text-gray-300 mb-6" />
+            <h3 className="text-xl font-bold text-gray-900">Your Decks are Empty</h3>
+            <p className="text-gray-500 mt-2 mb-8">Go to Study or Library and add some words to start your MemoFlow!</p>
+            <button 
+              onClick={() => onSetView('study')}
+              className="px-8 py-3 bg-white border border-gray-200 text-indigo-600 rounded-2xl font-bold shadow-sm hover:border-indigo-600 transition-all"
+            >
+              Start Studying
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
+         <div className="p-8 bg-indigo-50 rounded-[2.5rem] flex items-start gap-6 border border-indigo-100/50">
+            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
+               <Calendar size={24} />
+            </div>
+            <div>
+               <h4 className="font-black text-gray-900 mb-1">Consistency is Key</h4>
+               <p className="text-sm text-indigo-900/60 leading-relaxed font-medium">FSRS optimizes for your long-term memory. Reviewing just 5-10 minutes every day is 10x more effective than cramming once a week.</p>
+            </div>
+         </div>
+         <div className="p-8 bg-emerald-50 rounded-[2.5rem] flex items-start gap-6 border border-emerald-100/50">
+            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm shrink-0">
+               <Sparkles size={24} />
+            </div>
+            <div>
+               <h4 className="font-black text-gray-900 mb-1">How it Works</h4>
+               <p className="text-sm text-emerald-900/60 leading-relaxed font-medium">Based on your feedback (Again-Easy), the system calculates exactly when you're about to forget a word and brings it back to you.</p>
+            </div>
+         </div>
+      </div>
     </div>
   );
 }

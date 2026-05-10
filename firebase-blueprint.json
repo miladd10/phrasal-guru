@@ -33,6 +33,26 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["word", "definition", "example", "phonetic", "translation", "category", "userId", "createdAt"]
+    },
+    "fsrsCard": {
+      "title": "FSRS Card",
+      "description": "FSRS memory state for a specific word.",
+      "type": "object",
+      "properties": {
+        "wordId": { "type": "string", "description": "The word identifier (usually the word itself or custom word ID)" },
+        "category": { "type": "string" },
+        "deck": { "type": "string", "description": "The custom deck name." },
+        "due": { "type": "string", "format": "date-time" },
+        "stability": { "type": "number" },
+        "difficulty": { "type": "number" },
+        "elapsed_days": { "type": "number" },
+        "scheduled_days": { "type": "number" },
+        "reps": { "type": "number" },
+        "lapses": { "type": "number" },
+        "state": { "type": "number", "description": "New=0, Learning=1, Review=2, Relearning=3" },
+        "last_review": { "type": "string", "format": "date-time" }
+      },
+      "required": ["wordId", "category", "due", "stability", "difficulty", "elapsed_days", "scheduled_days", "reps", "lapses", "state"]
     }
   },
   "firestore": {
@@ -43,6 +63,10 @@
     "/users/{userId}/customVerbs/{wordId}": {
       "schema": "customVerb",
       "description": "Custom vocabulary items added by the specific user."
+    },
+    "/users/{userId}/fsrsCards/{wordId}": {
+      "schema": "fsrsCard",
+      "description": "Progress tracking for words in MemoFlow."
     }
   }
 }

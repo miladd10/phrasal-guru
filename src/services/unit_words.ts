@@ -1,6 +1,6 @@
 import { PhrasalVerb } from './dataService';
 
-export const UNIT_WORDS_DATA: PhrasalVerb[] = [
+export const UNIT_WORDS_DATA = [
   {
     word: "assess",
     definition: "to judge or evaluate someone or something carefully",

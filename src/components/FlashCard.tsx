@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PhrasalVerb, getSpeech } from '../services/dataService';
-import { Languages, Volume2, Info, ChevronRight, RotateCcw, ChevronDown, Loader2 } from 'lucide-react';
+import { Languages, Volume2, Info, ChevronRight, RotateCcw, ChevronDown, Loader2, Sparkles } from 'lucide-react';
 
 const playPCM = async (base64Audio: string) => {
   try {
@@ -46,9 +46,20 @@ interface FlashCardProps {
   total: number;
   isMastered: boolean;
   onToggleMastered: (word: string) => void;
+  onAddToMemoFlow?: (verb: PhrasalVerb) => void;
+  isInMemoFlow?: boolean;
 }
 
-export default function FlashCard({ verb, onNext, index, total, isMastered, onToggleMastered }: FlashCardProps) {
+export default function FlashCard({ 
+  verb, 
+  onNext, 
+  index, 
+  total, 
+  isMastered, 
+  onToggleMastered,
+  onAddToMemoFlow,
+  isInMemoFlow 
+}: FlashCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -95,8 +106,21 @@ export default function FlashCard({ verb, onNext, index, total, isMastered, onTo
           <span className="text-[10px] uppercase tracking-widest text-indigo-400 font-bold mb-1">Learning Session</span>
           <span className="text-sm font-bold text-gray-400">Word {index + 1} of {total}</span>
         </div>
-        <div className="flex items-center gap-3">
-          <button 
+          <div className="flex items-center gap-3">
+            {onAddToMemoFlow && !isInMemoFlow && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToMemoFlow(verb);
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-black transition-all border bg-white text-indigo-400 border-indigo-100 hover:bg-indigo-50 hover:text-indigo-600"
+                title="Add to Spaced Repetition"
+              >
+                <Sparkles size={12} className="text-indigo-500" />
+                MemoFlow
+              </button>
+            )}
+            <button 
             onClick={(e) => {
               e.stopPropagation();
               onToggleMastered(verb.word);

@@ -77,5 +77,25 @@ service cloud.firestore {
                     
       allow delete: if isOwner(userId) && isVerified();
     }
+
+    // FSRS Cards (MemoFlow)
+    match /users/{userId}/fsrsCards/{wordId} {
+      function isValidFsrsCard(data) {
+        return data.wordId is string && data.wordId.size() <= 100 &&
+               data.category is string && data.category.size() <= 50 &&
+               data.stability is number &&
+               data.difficulty is number &&
+               data.elapsed_days is number &&
+               data.scheduled_days is number &&
+               data.reps is number &&
+               data.lapses is number &&
+               data.state is number;
+      }
+
+      allow list: if isOwner(userId);
+      allow get: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isVerified() && isValidFsrsCard(incoming());
+      allow delete: if isOwner(userId) && isVerified();
+    }
   }
 }

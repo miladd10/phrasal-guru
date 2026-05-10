@@ -10,7 +10,7 @@
     <meta name="description" content="Master English Phrasal Verbs & Idioms with interactive flashcards." />
     
     <!-- iOS support -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Lexis" />
     <link rel="apple-touch-icon" href="/logo.png" />
@@ -18,8 +18,40 @@
     <link rel="apple-touch-icon" sizes="152x152" href="/logo.png" />
     <link rel="apple-touch-icon" sizes="167x167" href="/logo.png" />
     
-    <!-- Manifest -->
-    <link rel="manifest" href="/manifest.json" />
+    <!-- Inline Manifest to prevent CORS/proxy issues in sandboxed environments -->
+    <script>
+      const manifest = {
+        "short_name": "Lexis",
+        "name": "Lexis",
+        "description": "Sophisticated vocabulary system for mastering phrasal verbs, idioms, and advanced vocabulary.",
+        "icons": [
+          {
+            "src": "/logo.png",
+            "type": "image/png",
+            "sizes": "192x192",
+            "purpose": "any"
+          },
+          {
+            "src": "/logo.png",
+            "type": "image/png",
+            "sizes": "512x512",
+            "purpose": "maskable"
+          }
+        ],
+        "start_url": "/",
+        "display": "standalone",
+        "theme_color": "#4f46e5",
+        "background_color": "#ffffff",
+        "orientation": "portrait"
+      };
+      const stringManifest = JSON.stringify(manifest);
+      const blob = new Blob([stringManifest], {type: 'application/json'});
+      const manifestURL = URL.createObjectURL(blob);
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = manifestURL;
+      document.head.appendChild(link);
+    </script>
   </head>
   <body>
     <div id="root"></div>

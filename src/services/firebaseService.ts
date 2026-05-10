@@ -12,10 +12,13 @@ import {
   serverTimestamp,
   addDoc,
   deleteDoc,
-  getDocFromServer
+  getDocFromServer,
+  getDocs,
+  Timestamp
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { PhrasalVerb } from './dataService';
+import { MemoCard } from './fsrsService';
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
@@ -71,6 +74,7 @@ export const loginWithGoogle = async () => {
     throw error;
   }
 };
+
 export const logout = () => signOut(auth);
 
 // Data Helpers
@@ -103,6 +107,50 @@ export const deleteCustomWord = async (userId: string, wordId: string) => {
     await deleteDoc(doc(db, 'users', userId, 'customVerbs', wordId));
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, `users/${userId}/customVerbs/${wordId}`);
+  }
+};
+
+// FSRS Helpers
+export const upsertMemoCard = async (userId: string, card: MemoCard) => {
+  // We use wordId as the document ID for easy lookup
+  const cardDoc = doc(db, 'users', userId, 'fsrsCards', card.wordId.replace(/[./#$]/g, '_'));
+  try {
+    const data = {
+      ...card,
+      due: Timestamp.fromDate(card.due as Date),
+      last_review: card.last_review ? Timestamp.fromDate(card.last_review as Date) : null,
+      updatedAt: serverTimestamp()
+    };
+    await setDoc(cardDoc, data, { merge: true });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `users/${userId}/fsrsCards/${card.wordId}`);
+  }
+};
+
+export const getMemoCards = async (userId: string): Promise<MemoCard[]> => {
+  const q = query(collection(db, 'users', userId, 'fsrsCards'));
+  try {
+    const snap = await getDocs(q);
+    return snap.docs.map(doc => {
+      const data = doc.data();
+      return {
+        ...data,
+        due: (data.due as Timestamp).toDate(),
+        last_review: data.last_review ? (data.last_review as Timestamp).toDate() : undefined,
+      } as MemoCard;
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, `users/${userId}/fsrsCards`);
+    return [];
+  }
+};
+
+export const removeMemoCard = async (userId: string, wordId: string) => {
+  const cardDoc = doc(db, 'users', userId, 'fsrsCards', wordId.replace(/[./#$]/g, '_'));
+  try {
+    await deleteDoc(cardDoc);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, `users/${userId}/fsrsCards/${wordId}`);
   }
 };
 
