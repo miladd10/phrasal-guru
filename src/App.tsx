@@ -7,7 +7,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { PHRASAL_VERBS_DATA, PhrasalVerb, enrichPhrasalVerb, Category } from './services/dataService';
 import { IDIOMS_DATA } from './services/idioms';
 import { UNIT_WORDS_DATA } from './services/unit_words';
-import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 import { 
   auth, 
   loginWithGoogle, 
@@ -19,8 +19,7 @@ import {
   OperationType,
   upsertMemoCard,
   getMemoCards,
-  removeMemoCard,
-  googleProvider
+  removeMemoCard
 } from './services/firebaseService';
 import { doc, getDoc, collection, onSnapshot, query, setDoc, serverTimestamp } from 'firebase/firestore';
 import FlashCard from './components/FlashCard';
@@ -59,9 +58,6 @@ const shuffle = <T,>(array: T[]): T[] => {
   return newArr;
 };
 
-const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
-const authMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mode') === 'auth';
-
 export default function App() {
   const [activeCategory, setActiveCategory] = useState<Category | 'words'>('phrasal');
   const [selectedUnit, setSelectedUnit] = useState<'unit0' | 'unit2' | 'unit4' | 'unit6' | 'unit8' | 'unit10' | 'unit12' | 'unit14' | 'unit16' | 'unit18' | 'unit20' | 'unit22' | 'unit24' | 'unit26'>('unit2');
@@ -79,7 +75,6 @@ export default function App() {
   const [customVerbs, setCustomVerbs] = useState<PhrasalVerb[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [popupBlocked, setPopupBlocked] = useState(false);
   const [inputText, setInputText] = useState('');
   const [masteredWords, setMasteredWords] = useState<Set<string>>(new Set());
   const [showOnlyUnmastered, setShowOnlyUnmastered] = useState(true); // Default to true as requested
@@ -157,62 +152,19 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Handle auth popup mode - auto-trigger login and close
-  useEffect(() => {
-    if (!authMode) return;
-    
-    const triggerLogin = async () => {
-      try {
-        await signInWithPopup(auth, googleProvider);
-        if (window.opener) {
-          window.opener.postMessage({ type: 'FIREBASE_AUTH_SUCCESS' }, window.location.origin);
-        }
-        window.close();
-      } catch (error) {
-        console.error("Popup auth error:", error);
-        window.close();
-      }
-    };
-
-    triggerLogin();
-  }, []);
-
   const handleLogin = async () => {
     setIsLoggingIn(true);
-    setPopupBlocked(false);
-
-    // Open popup synchronously from click handler (prevents browser blocking)
-    const authWindow = window.open(
-      `${window.location.origin}?mode=auth`,
-      'firebaseAuth',
-      'width=500,height=600,toolbar=no,scrollbars=yes,resizable=yes'
-    );
-
-    if (!authWindow) {
-      // Popup was blocked
+    try {
+      const result = await loginWithGoogle();
+      if (result) setUser(result.user);
+    } catch (error: any) {
+      console.error("Login failed:", error);
+      if (error.code !== 'auth/popup-closed-by-user') {
+        alert(`Login failed: ${error.message}`);
+      }
+    } finally {
       setIsLoggingIn(false);
-      setPopupBlocked(true);
-      return;
     }
-
-    // Listen for success message from the popup
-    const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
-      if (event.data?.type === 'FIREBASE_AUTH_SUCCESS') {
-        window.removeEventListener('message', handleMessage);
-        setIsLoggingIn(false);
-      }
-    };
-    window.addEventListener('message', handleMessage);
-
-    // Cleanup if popup is closed without logging in
-    const pollClosed = setInterval(() => {
-      if (authWindow.closed) {
-        clearInterval(pollClosed);
-        window.removeEventListener('message', handleMessage);
-        setIsLoggingIn(false);
-      }
-    }, 500);
   };
 
   const allVerbs = useMemo(() => {
@@ -312,21 +264,6 @@ export default function App() {
     }
   };
 
-  if (authMode) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-white font-sans">
-        <div className="flex flex-col items-center gap-4 p-8 text-center">
-          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-100 animate-pulse">
-            <BookOpen size={32} className="text-white" />
-          </div>
-          <Loader2 size={32} className="animate-spin text-indigo-600 mt-4" />
-          <p className="text-sm font-bold text-gray-900 mt-2">Signing in with Google...</p>
-          <p className="text-xs text-gray-500">This window will close automatically after login.</p>
-        </div>
-      </div>
-    );
-  }
-
   if (isInitialLoad) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
@@ -400,31 +337,15 @@ export default function App() {
                 <button 
                   onClick={handleLogin}
                   disabled={isLoggingIn}
-                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all shadow-md disabled:opacity-50 ${
-                    popupBlocked ? 'bg-orange-500 hover:bg-orange-600' : 'bg-indigo-600 hover:bg-indigo-700'
-                  } text-white`}
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all shadow-md disabled:opacity-50 bg-indigo-600 hover:bg-indigo-700 text-white"
                 >
                   {isLoggingIn ? (
                     <Loader2 size={14} className="animate-spin" />
                   ) : (
                     <UserIcon size={14} />
                   )}
-                  {popupBlocked ? 'Retry Login' : (isLoggingIn ? 'Connecting...' : 'Login with Google')}
+                  {isLoggingIn ? 'Connecting...' : 'Login with Google'}
                 </button>
-                {popupBlocked && (
-                  <div className="flex flex-col items-end gap-1 mt-1 bg-orange-50 p-2 rounded-lg border border-orange-200">
-                    <p className="text-[9px] text-orange-700 font-bold flex items-center gap-1">
-                      <AlertCircle size={10} /> Popup Blocked
-                    </p>
-                    <button 
-                      onClick={() => window.open(window.location.href, '_blank')}
-                      className="flex items-center gap-1 text-[9px] bg-white border border-orange-300 px-2 py-1 rounded text-orange-700 hover:bg-orange-100 font-bold shadow-sm"
-                    >
-                      <ExternalLink size={10} />
-                      Open in New Tab
-                    </button>
-                  </div>
-                )}
               </div>
             )}
             
@@ -885,6 +806,7 @@ interface MemoFlowContentProps {
 
 function MemoFlowContent({ allVerbs, memoCards, user, onSetView, onUpdateCard }: MemoFlowContentProps) {
   const [sessionDeck, setSessionDeck] = useState<string | null>(null);
+  const [sessionCards, setSessionCards] = useState<MemoCard[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
 
   // Group cards into decks (categories)
@@ -905,15 +827,6 @@ function MemoFlowContent({ allVerbs, memoCards, user, onSetView, onUpdateCard }:
     return d;
   }, [memoCards]);
 
-  const activeDeckCards = useMemo(() => {
-    if (!sessionDeck || !decks[sessionDeck]) return [];
-    // Sort cards: Due first, then New
-    const now = new Date();
-    return decks[sessionDeck].cards
-      .filter(c => isAfter(now, (c.due as Date)) || c.reps === 0)
-      .sort((a,b) => (a.due as Date).getTime() - (b.due as Date).getTime());
-  }, [sessionDeck, decks]);
-
   if (!user) {
     return (
       <div className="text-center py-20">
@@ -924,20 +837,47 @@ function MemoFlowContent({ allVerbs, memoCards, user, onSetView, onUpdateCard }:
     );
   }
 
-  if (sessionDeck && activeDeckCards.length > 0) {
-    const currentCard = activeDeckCards[currentIdx];
+  if (sessionDeck && sessionCards.length > 0) {
+    const currentCard = sessionCards[currentIdx];
+    
+    // Safety guard: if index out of bounds or card missing
+    if (!currentCard) {
+      return (
+        <div className="text-center py-20">
+          <Loader2 className="animate-spin mx-auto text-indigo-600" size={32} />
+          <p className="text-gray-500 mt-4">Adjusting session...</p>
+          <button 
+            onClick={() => setSessionDeck(null)}
+            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold"
+          >
+            Reset Session
+          </button>
+        </div>
+      );
+    }
+
     const verb = allVerbs.find(v => v.word === currentCard.wordId);
 
-    if (!verb) return null;
+    if (!verb) {
+       // Skip if word data is missing for some reason
+       return (
+         <div className="text-center py-20">
+            <AlertCircle className="mx-auto text-orange-400 mb-4" />
+            <p className="text-gray-600">Word data not found for {currentCard.wordId}</p>
+            <button onClick={() => setCurrentIdx(prev => prev + 1)} className="mt-4 text-indigo-600 font-bold">Skip Card</button>
+         </div>
+       );
+    }
 
     const handleReview = async (rating: Rating) => {
       const { card: updatedCard } = reviewMemoCard(currentCard, rating);
       await onUpdateCard(updatedCard);
       
-      if (currentIdx < activeDeckCards.length - 1) {
+      if (currentIdx < sessionCards.length - 1) {
         setCurrentIdx(currentIdx + 1);
       } else {
         setSessionDeck(null);
+        setSessionCards([]);
         setCurrentIdx(0);
       }
     };
@@ -948,7 +888,10 @@ function MemoFlowContent({ allVerbs, memoCards, user, onSetView, onUpdateCard }:
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center justify-between px-4">
           <button 
-            onClick={() => setSessionDeck(null)}
+            onClick={() => {
+              setSessionDeck(null);
+              setSessionCards([]);
+            }}
             className="flex items-center gap-2 text-indigo-600 font-bold text-sm hover:translate-x-1 transition-transform"
           >
             <ArrowLeft size={18} />
@@ -959,7 +902,7 @@ function MemoFlowContent({ allVerbs, memoCards, user, onSetView, onUpdateCard }:
               Reviewing: {sessionDeck}
             </span>
             <p className="text-sm font-bold text-indigo-600">
-              {currentIdx + 1} / {activeDeckCards.length}
+              {currentIdx + 1} / {sessionCards.length}
             </p>
           </div>
         </div>
@@ -967,7 +910,7 @@ function MemoFlowContent({ allVerbs, memoCards, user, onSetView, onUpdateCard }:
         <FlashCard 
           verb={verb}
           index={currentIdx}
-          total={activeDeckCards.length}
+          total={sessionCards.length}
           onNext={() => {}} // Not used here as we have review buttons
           isMastered={false}
           onToggleMastered={() => {}}
@@ -1023,6 +966,12 @@ function MemoFlowContent({ allVerbs, memoCards, user, onSetView, onUpdateCard }:
               key={cat}
               onClick={() => {
                 if (stats.due + stats.new > 0) {
+                  const now = new Date();
+                  const cardsToReview = stats.cards
+                    .filter(c => isAfter(now, (c.due as Date)) || c.reps === 0)
+                    .sort((a,b) => (a.due as Date).getTime() - (b.due as Date).getTime());
+                  
+                  setSessionCards(cardsToReview);
                   setSessionDeck(cat);
                   setCurrentIdx(0);
                 }
